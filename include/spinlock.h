@@ -11,17 +11,15 @@ namespace small
     class spinlock
     {
     public:
-        spinlock                                    ( const int & spin_count = 4000 ) : spin_count_( spin_count ) {}
+        spinlock                                    ( const int & spin_count = 4000 ) : lock_( ATOMIC_FLAG_INIT ), spin_count_( spin_count ){}
 
         // lock functions
         void            lock                        () 
         { 
             for ( int count = 0; lock_.test_and_set( std::memory_order_acquire ); ++count )
             {
-                if ( count >= spin_count_ ) {
-                    std::cout << "spin";
+                if ( count >= spin_count_ ) 
                     std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
-                }
             }
         }
         
@@ -32,7 +30,8 @@ namespace small
         bool            try_lock                    () { return lock_.test_and_set( std::memory_order_acquire ) ? /*before was true so no lock*/false : /*lock*/true; }
 
     private:
-        std::atomic_flag lock_ = false;
+        // members
+        std::atomic_flag lock_;
         int             spin_count_;
     };
 }
