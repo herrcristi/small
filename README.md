@@ -65,5 +65,5 @@ small::event_queue<int> q;
 q.push_back( 1 ); // q.signal_exit();
 ...
 int e = 0;
-q.wait_pop_front( &e );
+auto ret = q.wait_pop_front( &e );
 ```
