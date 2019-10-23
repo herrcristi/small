@@ -42,56 +42,98 @@ namespace small
         }
 
     
-
+        
         // wait
         void            wait                        () 
         { 
             std::unique_lock<std::mutex> mlock( lock_ ); 
             while ( test_event_and_reset() == false )
                 condition_.wait( mlock );
-            return;
         }
+
+        // wait
+        template<typename _Predicate>
+        void            wait                        ( _Predicate __p )
+        {
+            std::unique_lock<std::mutex> mlock( lock_ );
+            while ( !__p() )
+            {
+                if ( event_type_ == EventType::kEvent_Manual && test_event_and_reset() == true )
+                {
+                    std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+                }
+                else
+                {
+                    while ( test_event_and_reset() == false )
+                        condition_.wait( mlock );
+                }
+            }
+        }
+
+
         
         // wait for (it uses wait_until)
         template<typename _Rep, typename _Period>
-        std::cv_status  wait_for                    ( const std::chrono::duration<_Rep, _Period>& rtime ) 
+        std::cv_status  wait_for                    ( const std::chrono::duration<_Rep, _Period>& __rtime ) 
         { 
             using __dur = typename std::chrono::system_clock::duration;
-            auto __reltime = std::chrono::duration_cast<__dur>(rtime);
-            if ( __reltime < rtime )
+            auto __reltime = std::chrono::duration_cast<__dur>(__rtime);
+            if ( __reltime < __rtime )
                 ++__reltime;
             return wait_until( std::chrono::system_clock::now() + __reltime );
         }
+
+        // wait_for
         template<typename _Rep, typename _Period, typename _Predicate>
-        bool            wait_for                    ( const std::chrono::duration<_Rep, _Period>& rtime, _Predicate p ) 
+        bool            wait_for                    ( const std::chrono::duration<_Rep, _Period>& __rtime, _Predicate __p ) 
         { 
             using __dur = typename std::chrono::system_clock::duration;
-            auto __reltime = std::chrono::duration_cast<__dur>(rtime);
-            if ( __reltime < rtime )
+            auto __reltime = std::chrono::duration_cast<__dur>(__rtime);
+            if ( __reltime < __rtime )
                 ++__reltime;
-            return wait_until( std::chrono::system_clock::now() + __reltime, std::move( p ) );
+            return wait_until( std::chrono::system_clock::now() + __reltime, std::move( __p ) );
         }
+
+
+
 
         // wait until
         template<typename _Lock, typename _Clock, typename _Duration>
-        std::cv_status  wait_until                  ( const std::chrono::time_point<_Clock, _Duration>& atime  ) 
+        std::cv_status  wait_until                  ( const std::chrono::time_point<_Clock, _Duration>& __atime  ) 
         { 
             std::unique_lock<std::mutex> mlock( lock_ ); 
             while ( test_event_and_reset() == false )
             {
-                std::cv_status ret = condition_.wait_until( mlock, atime );
+                std::cv_status ret = condition_.wait_until( mlock, __atime );
                 if ( ret == std::cv_status::timeout )
-                    return /*one last check*/test_event_and_reset() == false ? std::cv_status::timeout : std::cv_status::no_timeout;
+                    return /*one last check*/test_event_and_reset() == false ? std::cv_status::timeout/*still timeout*/ : std::cv_status::no_timeout;
             }
             return std::cv_status::no_timeout;
         }
+
+        // wait_until
         template<typename _Clock, typename _Duration, typename _Predicate>
-        bool            wait_until                  ( const std::chrono::time_point<_Clock, _Duration>& atime, _Predicate p ) 
+        bool            wait_until                  ( const std::chrono::time_point<_Clock, _Duration>& __atime, _Predicate __p ) 
         { 
-            while ( !p() )
+            std::unique_lock<std::mutex> mlock( lock_ );
+            while ( !__p() )
             {
-                if ( wait_until( atime ) == std::cv_status::timeout )
-                    return p();
+                if ( event_type_ == EventType::kEvent_Manual && test_event_and_reset() == true )
+                {
+                    // check if timeout
+                    if ( std::chrono::system_clock::now() >= __atime )
+                        return __p();
+                    std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+                }
+                else
+                {
+                    while ( test_event_and_reset() == false )
+                    {
+                        std::cv_status ret = condition_.wait_until( mlock, __atime );
+                        if ( ret == std::cv_status::timeout )
+                            return __p();
+                    }
+                }
             }
             return true;
         }
@@ -101,7 +143,7 @@ namespace small
         // test event and consume it
         bool            test_event_and_reset        ()
         {
-            if ( event_value_ == true )
+            if ( event_value_/*.load()*/ == true )
             {
                 if ( event_type_ == EventType::kEvent_Automatic )
                     event_value_ = false;
@@ -109,6 +151,8 @@ namespace small
             }
             return false;
         }
+
+
 
     private:
         // mutex locker
