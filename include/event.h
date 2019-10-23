@@ -98,7 +98,7 @@ namespace small
 
 
         // wait until
-        template<typename _Lock, typename _Clock, typename _Duration>
+        template<typename _Clock, typename _Duration>
         std::cv_status  wait_until                  ( const std::chrono::time_point<_Clock, _Duration>& __atime  ) 
         { 
             std::unique_lock<std::mutex> mlock( lock_ ); 

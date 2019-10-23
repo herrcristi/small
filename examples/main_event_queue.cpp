@@ -33,7 +33,10 @@ int main()
     
     
     qc e;
-    auto ret = q.wait_pop_front( &e );
+    auto ret = q.wait_pop_front_for( std::chrono::milliseconds( 1 ), &e );
+    std::cout << "ret=" << static_cast<int>(ret) << ", pop " << e.first << "," << e.second << std::endl;
+
+    ret = q.wait_pop_front( &e );
     std::cout << "ret=" << static_cast<int>(ret) << ", pop " << e.first << "," << e.second << std::endl;
 
     ret = q.wait_pop_front( &e );

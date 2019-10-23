@@ -36,6 +36,8 @@ namespace small
         // quit
         void            signal_exit                 () { exit_flag_ = true; event_.set_event(); }
 
+
+
         // wait pop_front and return that element
         EnumEventQueue  wait_pop_front              ( T * elem )
         {
@@ -44,15 +46,7 @@ namespace small
 
             // wait
             event_.wait( [&]() -> bool {
-                if ( exit_flag_.load() == true )
-                    return true;
-
-                if ( queue_.empty() )
-                    return false;
-                if ( elem )
-                    *elem = std::move( queue_.front() );
-                queue_.pop_front();
-                return true;
+                return test_and_get_front( elem );
             } );
 
             if ( exit_flag_.load() == true )
@@ -60,6 +54,57 @@ namespace small
 
             return EnumEventQueue::kQueue_Element;
         }
+
+
+        // wait pop_front_for and return that element
+        template<typename _Rep, typename _Period>
+        EnumEventQueue  wait_pop_front_for          ( const std::chrono::duration<_Rep, _Period>& __rtime, T* elem )
+        {
+            using __dur = typename std::chrono::system_clock::duration;
+            auto __reltime = std::chrono::duration_cast<__dur>(__rtime);
+            if ( __reltime < __rtime )
+                ++__reltime;
+            return wait_pop_front_until( std::chrono::system_clock::now() + __reltime, elem );
+        }
+
+
+
+        // wait until
+        template<typename _Clock, typename _Duration>
+        EnumEventQueue  wait_pop_front_until        ( const std::chrono::time_point<_Clock, _Duration>& __atime, T* elem )
+        {
+            if ( exit_flag_.load() == true )
+                return EnumEventQueue::kQueue_Exit;
+
+            // wait
+            bool ret = event_.wait_until( __atime, [&]() -> bool {
+                return test_and_get_front( elem );
+            } );
+
+            if ( exit_flag_.load() == true )
+                return EnumEventQueue::kQueue_Exit;
+
+            return ret ? EnumEventQueue::kQueue_Element : EnumEventQueue::kQueue_Timeout;
+        }
+
+
+
+    private:
+        // check for front element
+        bool            test_and_get_front          ( T* elem )
+        {
+            if ( exit_flag_.load() == true )
+                return true;
+
+            if ( queue_.empty() )
+                return false;
+
+            if ( elem )
+                *elem = std::move( queue_.front() );
+            queue_.pop_front();
+            return true;
+        }
+
 
     private:
         // queue
