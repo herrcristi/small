@@ -2,6 +2,10 @@
 Small project
 
 Contains everyday features to be used
+* spinlock
+* event
+* event_queue
+
 
 ## spinlock
 Spinlock is just like a mutex but it uses atomic lockless to do locking (based on std::atomic_flag).
