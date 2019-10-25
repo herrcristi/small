@@ -6,6 +6,7 @@ Contains everyday features to be used
 * event
 * event_queue
 
+* base64
 * quick_hash
 * util functions
 
@@ -78,6 +79,27 @@ auto ret = q.wait_pop_front( &e );
 
 
 ## Utilities
+
+
+### base64
+Functions to encode or decode base64
+
+The following function is available
+```tobase64, frombase64```
+
+and additionals for string and vector<char>
+```tobase64_s, tobase64_v, frombase64_s, frombase64_v```
+and other can be added
+
+Use it like this
+```
+std::string b64 = small::tobase64_s( "hello world" );
+std::vector<char> vb64 = small::tobase64_v( "hello world", 11 );
+   
+std::string decoded = small::frombase64_s( b64 );
+std::vector<char> vd64 = small::frombase64_v( b64 );
+```
+
 
 
 ### quick_hash
