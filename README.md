@@ -7,6 +7,7 @@ Contains everyday features to be used
 * event_queue
 
 * quick_hash
+* util functions
 
 
 
@@ -93,3 +94,18 @@ unsigned long long h = small::quick_hash( "some text", 9/*strlen(...)*/ );
 unsigned long long h1 = small::quick_hash( "some ", 5/*strlen(...)*/ );
 unsigned long long h2 = small::quick_hash( "text",  4/*strlen(...)*/, h1/*continue from h1*/ );
 ```
+
+### util
+Utility functions or defines
+
+The following function is available
+```stricmp, struct icasecmp```
+
+Use it like this
+```
+int r = small::stricmp( "a", "C" );
+...
+std::map<std::string, int, small::icasecmp> m;
+```
+
+
