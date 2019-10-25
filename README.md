@@ -6,8 +6,11 @@ Contains everyday features to be used
 * event
 * event_queue
 
+* quick_hash
 
-## spinlock
+
+
+### spinlock
 Spinlock is just like a mutex but it uses atomic lockless to do locking (based on std::atomic_flag).
 
 The following functions are available
@@ -24,7 +27,7 @@ small::spinlock lock;
 ```
 
 
-## event
+### event
 Event is based on mutex and condition_variable
 
 !!Important!! An automatic event stay set until it is consumed, a manual event stay set until is reseted
@@ -54,7 +57,7 @@ e.wait();
 ```
 
 
-## event_queue
+### event_queue
 A queue with events functions
 
 The following functions are available
@@ -70,4 +73,23 @@ q.push_back( 1 ); // q.signal_exit();
 ...
 int e = 0;
 auto ret = q.wait_pop_front( &e );
+```
+
+
+## Utilities
+
+
+### quick_hash
+When you want to do a simple hash
+
+The following function is available
+```quick_hash```
+
+Use it like this
+```
+unsigned long long h = small::quick_hash( "some text", 9/*strlen(...)*/ );
+...
+// or you can used like this
+unsigned long long h1 = small::quick_hash( "some ", 5/*strlen(...)*/ );
+unsigned long long h2 = small::quick_hash( "text",  4/*strlen(...)*/, h1/*continue from h1*/ );
 ```
