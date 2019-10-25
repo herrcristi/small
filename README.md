@@ -89,9 +89,7 @@ The following function is available
 
 and additionals for string and vector<char>
 ```tobase64_s, tobase64_v, frombase64_s, frombase64_v```
-and other can be added
-
-Use it like this
+and other can be addedUse it like this
 ```
 std::string b64 = small::tobase64_s( "hello world" );
 std::vector<char> vb64 = small::tobase64_v( "hello world", 11 );
@@ -120,7 +118,9 @@ unsigned long long h2 = small::quick_hash( "text",  4/*strlen(...)*/, h1/*contin
 ### util
 Utility functions or defines
 
-The following function is available
+The following functions are available
+
+
 ```stricmp, struct icasecmp```
 
 Use it like this
