@@ -24,6 +24,11 @@ namespace small
         size_t          size                        () const {  std::unique_lock<small::event> mlock( event_ ); return queue_.size();  }
         // empty
         bool            empty                       () const { return size() == 0; }
+        
+        // clear
+        void            clear                       () { std::unique_lock<small::event> mlock( event_ ); queue_.clear(); }
+        // reset
+        void            reset                       () { clear(); exit_flag_ = false; event_.reset_event(); }
 
 
         // push_back
@@ -35,7 +40,7 @@ namespace small
         
         // quit
         void            signal_exit                 () { exit_flag_ = true; event_.set_event(); }
-
+        
 
 
         // wait pop_front and return that element
