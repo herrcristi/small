@@ -31,6 +31,12 @@ namespace small
         void            reset                       () { clear(); exit_flag_ = false; event_.reset_event(); }
 
 
+        // use it as locker (std::unique_lock<small:event_queue<T>> m...)
+        void            lock                        () { event_.lock();   }
+        void            unlock                      () { event_.unlock(); }
+        bool            try_lock                    () { return event_.try_lock(); }
+
+
         // push_back
         void            push_back                   ( const T& t ) { { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
         void            push_back                   ( T&& t      ) { { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
@@ -40,6 +46,7 @@ namespace small
         
         // quit
         void            signal_exit                 () { exit_flag_ = true; event_.set_event(); }
+        bool            is_exit                     () { return exit_flag_.load() == true; }
         
 
 
