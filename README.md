@@ -2,7 +2,7 @@
 Small project
 
 Contains everyday features to be used
-* spinlock
+* spinlock (or critical_section)
 * event
 * event_queue
 #
@@ -12,7 +12,7 @@ Contains everyday features to be used
 
 #
 
-### spinlock
+### spinlock (or critical_section)
 Spinlock is just like a mutex but it uses atomic lockless to do locking (based on std::atomic_flag).
 
 The following functions are available
@@ -20,7 +20,7 @@ The following functions are available
 
 Use it like this
 ```
-small::spinlock lock;
+small::spinlock lock; // small::critical_section lock;
 ...
 {
     std::unique_lock<small::spinlock> mlock( lock );

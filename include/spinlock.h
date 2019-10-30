@@ -7,6 +7,9 @@
 // spin lock - just like mutex it uses atomic lockless to do locking
 namespace small
 {
+    class spinlock;
+    using critical_section = spinlock;
+
     // spinlock
     class spinlock
     {
