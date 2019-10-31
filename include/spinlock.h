@@ -14,7 +14,7 @@ namespace small
     class spinlock
     {
     public:
-        spinlock                                    ( const int & spin_count = 4000 ) : lock_( ATOMIC_FLAG_INIT ), spin_count_( spin_count ){}
+        spinlock                                    ( const int & spin_count = 4000 ) : /*lock_( ATOMIC_FLAG_INIT ),*/ spin_count_( spin_count ){}
 
         // lock functions
         void            lock                        () 

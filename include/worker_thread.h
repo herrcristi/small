@@ -13,8 +13,8 @@ namespace small
     class worker_thread
     {
     public:
-        // do it like it is done in thread
-        worker_thread                               ( const int& threads_count /*= 1*/ ) : threads_( threads_count )  {  }
+        // worker_thread
+        worker_thread                               ( const int& threads_count /*= 1*/ ) : threads_( threads_count ), threads_flag_created_( false ){  }
 
         ~worker_thread                              () { signal_exit(); stop_threads(); }
            
@@ -27,7 +27,15 @@ namespace small
         
         // clear
         void            clear                       () { queue_items_.clear(); }
+
+
+
+        // use it as locker (std::unique_lock<small:worker_thread<T>> m...)
+        void            lock                        () { queue_items_.lock();   }
+        void            unlock                      () { queue_items_.unlock(); }
+        bool            try_lock                    () { return queue_items_.try_lock(); }
         
+
 
 
         // add items to be processed
@@ -39,9 +47,11 @@ namespace small
         void            emplace_back                ( _Args&&... __args ) { if ( is_exit() ) { return; } queue_items_.emplace_back( std::forward<_Args>( __args )... ); start_threads(); }
         
 
+
         // signal exit
         void            signal_exit                 () { queue_items_.signal_exit(); }
         bool            is_exit                     () { return queue_items_.is_exit(); }
+
 
     private:
         worker_thread                               ( worker_thread&        ) = delete;
@@ -67,29 +77,29 @@ namespace small
                 {
                     th = std::move( std::thread( [&]( ) 
                     {
+                        T elem;
                         while ( 1 )
                         {
-                            T elem;
                             small::EnumEventQueue  ret = queue_items_.wait_pop_front_for( std::chrono::seconds( 3 ), &elem );
                             
                             if ( ret == small::EnumEventQueue::kQueue_Exit )
                             {
-                                std::cout << "exit" << std::endl; break;
+                                break;
                             }
                             else if ( ret == small::EnumEventQueue::kQueue_Timeout )
                             {
-                                std::cout << "timeout" << std::endl;
+                                
                             }
                             else if ( ret == small::EnumEventQueue::kQueue_Element )
                             {
-                                processing_function_( elem );
-                                std::cout << "element=" << elem << std::endl;
+                                processing_function_( this, elem );
                             }
                         }
                     } ) );
                 }
             }
         }
+
 
         // stop threads
         void            stop_threads                ()
@@ -99,6 +109,7 @@ namespace small
                 std::unique_lock< small::event_queue<T>> mlock( queue_items_ );
                 threads = std::move( threads_ );
             }
+
             for ( auto& th : threads )
             {
                 if ( th.joinable() )
@@ -106,20 +117,18 @@ namespace small
                     th.join();
                 }
             }
+
+            //todo reset flag created
         }
 
-        // process
-        void Process()
-        {
-            for ( auto item : queue_items_ )
-            {
-                processing_function_( item );
-            }
-        }
+        
+
 
     private:
         // threads
         std::vector<std::thread> threads_;
+        // threads flag
+        std::atomic<bool> threads_flag_created_;
 
         // queue of items
         small::event_queue<T> queue_items_;

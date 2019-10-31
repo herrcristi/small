@@ -17,7 +17,7 @@ namespace small
 
         int base64_size = base64::get_base64_size( src_length );
         base64->resize( base64_size );
-        base64::tobase64( base64->data(), src, src_length );
+        base64::tobase64( (char *)base64->data(), src, src_length );
     }
     
     // to base64
@@ -35,7 +35,7 @@ namespace small
         int decoded_size = base64::get_decodedbase64_size( base64_length );
         
         decoded->resize( decoded_size );
-        int decoded_length = base64::frombase64( decoded->data(), base64, base64_length );
+        int decoded_length = base64::frombase64( (char*)decoded->data(), base64, base64_length );
         decoded->resize( decoded_length );
     }
     

@@ -64,7 +64,7 @@ A queue with events functions
 
 The following functions are available
 
-```size, push_back, emplace_back, wait_pop_front, wait_pop_front_for, wait_pop_front_until, signal_exit```
+```size, push_back, emplace_back, wait_pop_front, wait_pop_front_for, wait_pop_front_until, signal_exit, ...```
 
 
 Use it like this
