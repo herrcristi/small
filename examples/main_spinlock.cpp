@@ -3,7 +3,8 @@
 #include <iostream>
 #include <condition_variable>
 
-#include "../include/spinlock.h"
+// make sure the path is included correct
+#include "small/include/spinlock.h"
 
 
 int main()

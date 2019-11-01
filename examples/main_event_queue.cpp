@@ -4,6 +4,7 @@
 #include <condition_variable>
 #include <thread>
 
+// make sure the path is included correct
 #include "small/include/event.h"
 #include "small/include/event_queue.h"
 

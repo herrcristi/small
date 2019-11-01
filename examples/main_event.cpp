@@ -4,7 +4,8 @@
 #include <condition_variable>
 #include <thread>
 
-#include "../include/event.h"
+// make sure the path is included correct
+#include "small/include/event.h"
 
 
 int main()

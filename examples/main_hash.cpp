@@ -5,6 +5,7 @@
 #include <thread>
 #include <map>
 
+// make sure the path is included correct
 #include "small/include/hash.h"
 
 
