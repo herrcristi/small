@@ -5,6 +5,29 @@
 
 #include "event.h"
 
+
+// a queue with events so we can wait for items to be available
+//
+// small::event_queue<int> q;
+// ...
+// q.push_back( 1 );
+// ...
+//
+// // on some thread
+// int e = 0;
+// auto ret = q.wait_pop_front( &e ); // ret can be small::EnumEventQueue::kQueue_Exit, small::EnumEventQueue::kQueue_Timeout or ret == small::EnumEventQueue::kQueue_Element
+// //auto ret = q.wait_pop_front_for( std::chrono::minutes( 1 ), &e ); 
+// if ( ret == small::EnumEventQueue::kQueue_Element )
+// { 
+//      // do something with e
+//      ... 
+// }
+//
+// ...
+// // on main thread no more processing
+// q.signal_exit();
+//
+
 namespace small
 {
     // enum

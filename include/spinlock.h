@@ -5,11 +5,18 @@
 #include <chrono>
 
 // spin lock - just like mutex it uses atomic lockless to do locking
+// 
+// small::spinlock lock; // small::critical_section lock;
+// ...
+// {
+//     std::unique_lock<small::spinlock> mlock( lock );
+//
+//    // do your work
+//    ...
+// }
+// 
 namespace small
 {
-    class spinlock;
-    using critical_section = spinlock;
-
     // spinlock
     class spinlock
     {

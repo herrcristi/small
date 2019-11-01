@@ -6,6 +6,28 @@
 #include <condition_variable>
 
 // use it as an event
+//
+// small::event e;
+// ...
+// {
+//     std::unique_lock<small::event> mlock( e ); // use it as a locker
+//     ...
+// }
+// ...
+// e.set_event();
+// ...
+// 
+// // on some thread
+// e.wait();
+// // or
+// e.wait( [&]() -> bool {
+//     return /*some conditions*/ ? true : false; // see event_queue how it uses this
+// } );
+// ...
+// ...
+// // create a manual event
+// small::event e( small::EventType::kEvent_Manual );
+//
 namespace small
 {
     enum class EventType

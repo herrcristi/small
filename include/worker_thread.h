@@ -7,6 +7,45 @@
 
 #include "event_queue.h"
 
+
+// using qc = std::pair<int, std::string>;
+// ...
+// // with a lambda for processing working function
+// small::worker_thread<qc> workers( 2, []( auto& w/*this*/, auto& item, auto b/*extra param*/ ) -> void
+// {
+//     {
+//         std::unique_lock< small::worker_thread<qc>> mlock( w ); // use worker_thread to lock
+//         ...
+//         //std::cout << "thread " << std::this_thread::get_id() << "processing " << item.first << " " << item.second << " b=" << b << "\n";
+//     }
+// }, 5/*extra param*/ );
+// ...
+// // or like this
+// small::worker_thread<qc> workers2( 1, WorkerThreadFunction() );
+// ...
+// // where WorkerThreadFunction can be
+// struct WorkerThreadFunction
+// {
+//     using qc = std::pair<int, std::string>;
+//     void operator()( small::worker_thread<qc>& w/*worker_thread*/, qc& item )
+//     {
+//         ...
+//         // add extra in queue
+//         // w.push_back(...)
+// 
+//         std::this_thread::sleep_for( std::chrono::milliseconds( 3000 ) );
+//     }
+// };
+// ..
+// ...
+// workers.push_back( { 1, "a" } );
+// workers.push_back( std::make_pair( 2, "b" ) );
+// workers.emplace_back( 3, "e" );
+// ...
+// // when finishing after signal_exit the work is aborted
+// workers.signal_exit();
+// //
+
 namespace small
 {
 

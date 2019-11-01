@@ -2,6 +2,14 @@
 
 #include "impl/base64_impl.h"
 
+
+//
+// std::string b64 = small::tobase64_s( "hello world" );
+// std::vector<char> vb64 = small::tobase64_v( "hello world", 11 );
+// 
+// std::string decoded = small::frombase64_s( b64 );
+// std::vector<char> vd64 = small::frombase64_v( b64 );
+//
 namespace small
 {
     //
