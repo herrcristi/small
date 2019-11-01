@@ -26,13 +26,18 @@ namespace small
         void            unlock                      () { lock_.unlock(); }
         bool            try_lock                    () { return lock_.try_lock(); }
 
+        
+        // set type
+        void            set_event_type              ( const EventType& event_type = EventType::kEvent_Automatic ) { std::unique_lock<std::mutex> mlock( lock_ ); event_type_ = event_type; }
+
 
         // set event 
         void            set_event                   () 
         { 
-            { std::unique_lock<std::mutex> mlock( lock_ ); event_value_ = true; } 
+            bool notify_all = false;
+            { std::unique_lock<std::mutex> mlock( lock_ ); event_value_ = true; notify_all = event_type_ == EventType::kEvent_Manual; }
         
-            if ( event_type_ == EventType::kEvent_Manual ) { condition_.notify_all(); } else { condition_.notify_one(); } 
+            if ( notify_all ) { condition_.notify_all(); } else { condition_.notify_one(); }
         }
         
         // reset event
@@ -143,7 +148,7 @@ namespace small
         // test event and consume it
         bool            test_event_and_reset        ()
         {
-            if ( event_value_/*.load()*/ == true )
+            if ( event_value_.load() == true )
             {
                 if ( event_type_ == EventType::kEvent_Automatic )
                     event_value_ = false;

@@ -28,7 +28,7 @@ namespace small
         // clear
         void            clear                       () { std::unique_lock<small::event> mlock( event_ ); queue_.clear(); }
         // reset
-        void            reset                       () { clear(); exit_flag_ = false; event_.reset_event(); }
+        void            reset                       () { clear(); exit_flag_ = false; event_.set_event_type( EventType::kEvent_Automatic );  event_.reset_event(); }
 
 
         // use it as locker (std::unique_lock<small:event_queue<T>> m...)
@@ -38,14 +38,15 @@ namespace small
 
 
         // push_back
-        void            push_back                   ( const T& t ) { { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
-        void            push_back                   ( T&& t      ) { { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
+        void            push_back                   ( const T& t ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
+        void            push_back                   ( T&& t      ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
         // emplace_back
         template<typename... _Args>
-        void            emplace_back                ( _Args&&... __args ) { { std::unique_lock<small::event> mlock( event_ );  queue_.emplace_back( std::forward<_Args>( __args )... ); } event_.set_event(); }
+        void            emplace_back                ( _Args&&... __args ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ );  queue_.emplace_back( std::forward<_Args>( __args )... ); } event_.set_event(); }
         
-        // quit
-        void            signal_exit                 () { exit_flag_ = true; event_.set_event(); }
+
+        // exit
+        void            signal_exit                 () { exit_flag_.store( true ); event_.set_event_type( EventType::kEvent_Manual ); event_.set_event(); /*event_.notify_all();*/ }
         bool            is_exit                     () { return exit_flag_.load() == true; }
         
 
