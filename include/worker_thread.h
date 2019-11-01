@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <thread>
+#include <functional>
+
 
 #include "event_queue.h"
 
@@ -9,12 +11,14 @@ namespace small
 {
 
     // small class for worker threads
-    template<class T, typename _Callable>
+    template<class T>
     class worker_thread
     {
     public:
         // worker_thread
-        worker_thread                               ( const int& threads_count /*= 1*/ ) : threads_( threads_count ), threads_flag_created_( false ){  }
+        template<typename _Callable, typename... Args>
+        worker_thread                               ( const int& threads_count /*= 1*/, _Callable function, Args... parameters ) : threads_( threads_count ), threads_flag_created_( false ),
+                                                        processing_function_( std::bind( std::forward<_Callable>( function ), std::ref(*this), std::placeholders::_1/*, std::placeholders::_2*/, std::forward<Args>( parameters )... ) ){ }
 
         ~worker_thread                              () { signal_exit(); stop_threads(); }
            
@@ -24,7 +28,6 @@ namespace small
         size_t          size                        () const { return queue_items_.size();  }
         // empty
         bool            empty                       () const { return size() == 0; }
-        
         // clear
         void            clear                       () { queue_items_.clear(); }
 
@@ -54,50 +57,67 @@ namespace small
 
 
     private:
-        worker_thread                               ( worker_thread&        ) = delete;
-        worker_thread                               ( worker_thread&&       ) = delete;
         worker_thread                               ( const worker_thread&  ) = delete;
-        worker_thread                               ( const worker_thread&& ) = delete;
+        //worker_thread                               ( worker_thread&        ) = delete;
+        worker_thread                               ( worker_thread&&       ) = delete;
+        //worker_thread                               ( const worker_thread&& ) = delete;
 
         worker_thread&        operator=             ( const worker_thread&  ) = delete;
         worker_thread&        operator=             ( worker_thread&& __t   ) = delete;
         
 
     private:
+
+
+        // thread function
+        void thread_function()
+        {
+            T elem;
+            while ( 1 )
+            {
+                // wait
+                small::EnumEventQueue  ret = queue_items_.wait_pop_front/*_for*/( /*std::chrono::minutes( 10 ),*/ &elem );
+
+                if ( ret == small::EnumEventQueue::kQueue_Exit )
+                {
+                    break;
+                }
+                else if ( ret == small::EnumEventQueue::kQueue_Timeout )
+                {
+
+                }
+                else if ( ret == small::EnumEventQueue::kQueue_Element )
+                {
+                    processing_function_( std::ref( elem ) );
+                }
+            }
+        }
+
+
+
         // create threads
         void            start_threads               ()
         {
-            // todo
-            // check bool if threads were started
+            // check first if threads were already started
+            if ( threads_flag_created_.load() == true )
+                return;
             
             std::unique_lock< small::event_queue<T>> mlock( queue_items_ );
+            
+            // check again
+            if ( threads_flag_created_.load() == true )
+                return;
+            
+            // create threads
             for ( auto & th : threads_ )
             {
                 if ( !th.joinable() )
                 {
-                    th = std::move( std::thread( [&]( ) 
-                    {
-                        T elem;
-                        while ( 1 )
-                        {
-                            small::EnumEventQueue  ret = queue_items_.wait_pop_front_for( std::chrono::seconds( 3 ), &elem );
-                            
-                            if ( ret == small::EnumEventQueue::kQueue_Exit )
-                            {
-                                break;
-                            }
-                            else if ( ret == small::EnumEventQueue::kQueue_Timeout )
-                            {
-                                
-                            }
-                            else if ( ret == small::EnumEventQueue::kQueue_Element )
-                            {
-                                processing_function_( this, elem );
-                            }
-                        }
-                    } ) );
+                    th = std::move( std::thread( /*[&]() { thread_function(); }*/&worker_thread::thread_function, this ) );
                 }
             }
+            // mark threads were created
+            threads_flag_created_.store( true );
         }
 
 
@@ -108,8 +128,9 @@ namespace small
             {
                 std::unique_lock< small::event_queue<T>> mlock( queue_items_ );
                 threads = std::move( threads_ );
+                threads_flag_created_.store( false );
             }
-
+            // wait for threads to stop
             for ( auto& th : threads )
             {
                 if ( th.joinable() )
@@ -117,24 +138,22 @@ namespace small
                     th.join();
                 }
             }
-
-            //todo reset flag created
         }
 
         
-
+        
 
     private:
         // threads
-        std::vector<std::thread> threads_;
+        std::vector<std::thread>    threads_;
         // threads flag
-        std::atomic<bool> threads_flag_created_;
+        std::atomic<bool>           threads_flag_created_;
 
         // queue of items
-        small::event_queue<T> queue_items_;
+        small::event_queue<T>       queue_items_;
 
         // processing Function
-        _Callable       processing_function_;
+        std::function<void( T& )>   processing_function_;
     };
 }
 
