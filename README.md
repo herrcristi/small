@@ -34,10 +34,12 @@ small::spinlock lock; // small::critical_section lock;
 ```
 
 
+#
+
 ### event
 Event is based on mutex and condition_variable
 
-###### !!Important!! An automatic event stay set until it is consumed, a manual event stay set until is reseted
+##### !!Important!! An automatic event stay set until it is consumed, a manual event stay set until is reseted
 
 The main functions are 
 
@@ -88,6 +90,7 @@ e.reset_event()
 ```
 
 
+#
 
 ### event_queue
 A queue with events functions to wait for items to be available
@@ -95,17 +98,21 @@ A queue with events functions to wait for items to be available
 The following functions are available
 
 For container
+
 ```size, empty, clear, reset```
 
 ```push_back, emplace_back```
 
 For events or locking
+
 ```lock, unlock, try_lock```
 
 Wait for items
+
 ```wait_pop_front, wait_pop_front_for, wait_pop_front_until```
 
 Signal exit when we no longer want to use the queue
+
 ```signal_exit, is_exit```
 
 
@@ -133,6 +140,7 @@ q.signal_exit();
 ```
 
 
+#
 
 ### worker_thread
 A class that creates several threads for producer/consumer
@@ -196,8 +204,11 @@ workers.signal_exit();
 ```
 
 
+#
+
 ## Utilities
 
+#
 
 ### base64
 Functions to encode or decode base64
@@ -217,6 +228,7 @@ std::vector<char> vd64 = small::frombase64_v( b64 );
 ```
 
 
+#
 
 ### quick_hash
 When you want to do a simple hash
@@ -232,6 +244,9 @@ unsigned long long h = small::quick_hash( "some text", 9/*strlen(...)*/ );
 unsigned long long h1 = small::quick_hash( "some ", 5/*strlen(...)*/ );
 unsigned long long h2 = small::quick_hash( "text",  4/*strlen(...)*/, h1/*continue from h1*/ );
 ```
+
+
+#
 
 ### util
 Utility functions or defines
