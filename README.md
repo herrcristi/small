@@ -117,6 +117,7 @@ Signal exit when we no longer want to use the queue
 
 
 Use it like this
+
 ```
 small::event_queue<int> q;
 ...
@@ -125,8 +126,12 @@ q.push_back( 1 );
 
 // on some thread
 int e = 0;
-auto ret = q.wait_pop_front( &e ); // ret can be small::EnumEventQueue::kQueue_Exit, small::EnumEventQueue::kQueue_Timeout or ret == small::EnumEventQueue::kQueue_Element
+auto ret = q.wait_pop_front( &e ); 
 //auto ret = q.wait_pop_front_for( std::chrono::minutes( 1 ), &e ); 
+
+// ret can be small::EnumEventQueue::kQueue_Exit, 
+// small::EnumEventQueue::kQueue_Timeout or ret == small::EnumEventQueue::kQueue_Element
+
 if ( ret == small::EnumEventQueue::kQueue_Element )
  { 
      // do something with e
@@ -148,16 +153,19 @@ A class that creates several threads for producer/consumer
 The following functions are available
 
 For data
+
 ```size, empty, clear```
 
 ```push_back, emplace_back```
 
 To use it as a locker
+
 ```lock, unlock, try_lock```
 
 Signal exit when we no longer want to use worker threads, 
 usefull when we have multiple objects that do some stuff that takes some time on destructor, 
 so until it is the turn of the destructor of this element we may already closed all the working threads
+
 ```signal_exit, is_exit```
 
 
@@ -171,7 +179,8 @@ small::worker_thread<qc> workers( 2, []( auto& w/*this*/, auto& item, auto b/*ex
     {
         std::unique_lock< small::worker_thread<qc>> mlock( w ); // use worker_thread to lock
         ...
-        //std::cout << "thread " << std::this_thread::get_id()  << "processing " << item.first << " " << item.second << " b=" << b << "\n";
+        //std::cout << "thread " << std::this_thread::get_id()  
+        // << "processing " << item.first << " " << item.second << " b=" << b << "\n";
     }
 }, 5/*extra param*/ );
 ...
@@ -204,11 +213,9 @@ workers.signal_exit();
 ```
 
 
-#
 
 ## Utilities
 
-#
 
 ### base64
 Functions to encode or decode base64
