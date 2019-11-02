@@ -70,13 +70,13 @@ namespace small
         //
         // get base64 buffer needed size (without null ending char)
         // 
-        inline int      get_base64_size             ( const int& length )
+        inline size_t   get_base64_size             ( const size_t& length )
         {
             return ((length + 2) / 3) * 4;
         }
 
         // to base64 (buffer must be proper allocated using get_base64_size + 1)
-        inline bool     tobase64                    ( char* base64, const char* src, const int& src_length )
+        inline bool     tobase64                    ( char* base64, const char* src, const size_t& src_length )
         {
             unsigned int    encoded_word = 0;
             int             count_bits = 0;
@@ -84,7 +84,7 @@ namespace small
             unsigned int    base64_index = 0;
 
             char            ch = 0;
-            for ( int i = 0; i < src_length; ++i, ++src )
+            for ( size_t i = 0; i < src_length; ++i, ++src )
             {
                 encoded_word = encoded_word << 8 | ((unsigned char)*src);
                 count_bits += 8;
@@ -127,20 +127,20 @@ namespace small
 
 
         // get aprox size
-        inline int      get_decodedbase64_size      ( const int& base64_length )
+        inline size_t   get_decodedbase64_size      ( const size_t& base64_length )
         {
             return ((base64_length + 3) / 4) * 3;
         }
 
         // decode from base 64 (returns length)
-        inline int      frombase64                  ( char* decoded_buffer, const char* base64, const int& base64_length )
+        inline size_t   frombase64                  ( char* decoded_buffer, const char* base64, const size_t& base64_length )
         {
-            int     decoded_length = 0;
+            size_t  decoded_length = 0;
 
             int     decoded_word = 0;
             int     count_bits = 0;
 
-            for ( int i = 0; i < base64_length; ++i, ++base64 )
+            for ( size_t i = 0; i < base64_length; ++i, ++base64 )
             {
                 const char ch = *base64;
                 if ( ch == '=' )
@@ -160,7 +160,7 @@ namespace small
                     unsigned char decoded_ch = (unsigned char)(0xFF & (decoded_word >> (count_bits)));
 
                     *decoded_buffer++ = decoded_ch;
-                    decoded_length++;
+                    ++decoded_length;
                 }
             }
 
