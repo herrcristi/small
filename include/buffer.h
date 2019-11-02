@@ -23,6 +23,11 @@
 // b.append( "world", 5 );
 // b.clear();
 //
+// std::string s64 = small::tobase64_s( "hello world", 11 );
+// b.clear();
+// small::frombase64( s64.c_str(), (int)s64.size(), &b );
+// b = small::frombase64_b( s64 );
+//
 namespace small
 {
     // class for representing a buffer

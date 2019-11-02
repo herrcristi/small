@@ -2,6 +2,7 @@
 
 #include "impl/base64_impl.h"
 
+#include "buffer.h"
 
 //
 // std::string b64 = small::tobase64_s( "hello world" );
@@ -64,6 +65,11 @@ namespace small
     inline std::vector<char> tobase64_v             ( const char* src, const int& src_length ) { std::vector<char> base64; tobase64( src, src_length, &base64 ); return base64; }    
     inline std::vector<char> tobase64_v             ( const std::string& src                 ) { return tobase64_v( src.c_str(), (int)src.size() ); }
 
+    // as buffer
+    inline small::buffer tobase64_b                 ( const char* src, const int& src_length ) { small::buffer base64; tobase64( src, src_length, &base64 ); return base64; }
+    inline small::buffer tobase64_b                 ( const std::string& src                 ) { return tobase64_b( src.c_str(), (int)src.size() ); }
+
+
 
 
     // from base64_s
@@ -74,6 +80,10 @@ namespace small
     // frombase64_v
     inline std::vector<char> frombase64_v           ( const char* base64, const int& base64_length ) { std::vector<char> decoded; frombase64( base64, base64_length, &decoded ); return decoded; }
     inline std::vector<char> frombase64_v           ( const std::string& base64              ) { return frombase64_v( base64.c_str(), (int)base64.size() ); }
+
+    // frombase64_b
+    inline small::buffer frombase64_b               ( const char* base64, const int& base64_length ) { small::buffer decoded; frombase64( base64, base64_length, &decoded ); return decoded; }
+    inline small::buffer frombase64_b               ( const std::string& base64             ) { return frombase64_b( base64.c_str(), (int)base64.size() ); }
 
     
 }

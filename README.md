@@ -9,6 +9,7 @@ Contains usefull everyday features to be used like:
 * worker_thread
 
 #
+* buffer
 * base64
 * quick_hash
 * util functions
@@ -216,6 +217,38 @@ workers.signal_exit();
 
 ## Utilities
 
+### buffer
+Buffer class for manipulating buffers (not strings)
+
+The following function is available
+```set, append```
+
+can be used like this
+
+```
+small::buffer b;
+b.clear();
+
+b.set( "abc", 3 );
+b.set( "b", 1, 2 );
+    
+char* e = b.extract(); // extract "anb"
+free( e );
+    
+b.append( "hello", 5 );
+b.clear( true );
+
+char* e1 = b.extract(); // extract ""
+free( e1 );
+
+b.append( "world", 5 );
+b.clear();
+
+std::string s64 = small::tobase64_s( "hello world", 11 );
+b.clear();
+small::frombase64( s64.c_str(), (int)s64.size(), &b );
+b = small::frombase64_b( s64 );
+```
 
 ### base64
 Functions to encode or decode base64
