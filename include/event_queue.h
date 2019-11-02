@@ -44,38 +44,38 @@ namespace small
     {
     public:
         // size
-        size_t          size                        () const {  std::unique_lock<small::event> mlock( event_ ); return queue_.size();  }
+        inline size_t   size                        () const {  std::unique_lock<small::event> mlock( event_ ); return queue_.size();  }
         // empty
-        bool            empty                       () const { return size() == 0; }
+        inline bool     empty                       () const { return size() == 0; }
         
         // clear
-        void            clear                       () { std::unique_lock<small::event> mlock( event_ ); queue_.clear(); }
+        inline void     clear                       () { std::unique_lock<small::event> mlock( event_ ); queue_.clear(); }
         // reset
-        void            reset                       () { clear(); exit_flag_ = false; event_.set_event_type( EventType::kEvent_Automatic );  event_.reset_event(); }
+        inline void     reset                       () { clear(); exit_flag_ = false; event_.set_event_type( EventType::kEvent_Automatic );  event_.reset_event(); }
 
 
         // use it as locker (std::unique_lock<small:event_queue<T>> m...)
-        void            lock                        () { event_.lock();   }
-        void            unlock                      () { event_.unlock(); }
-        bool            try_lock                    () { return event_.try_lock(); }
+        inline void    lock                        () { event_.lock();   }
+        inline void    unlock                      () { event_.unlock(); }
+        inline bool    try_lock                    () { return event_.try_lock(); }
 
 
         // push_back
-        void            push_back                   ( const T& t ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
-        void            push_back                   ( T&& t      ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
+        inline void     push_back                   ( const T& t ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
+        inline void     push_back                   ( T&& t      ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ ); queue_.push_back( std::forward<T>( t ) ); } event_.set_event(); }
         // emplace_back
         template<typename... _Args>
-        void            emplace_back                ( _Args&&... __args ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ );  queue_.emplace_back( std::forward<_Args>( __args )... ); } event_.set_event(); }
+        inline void     emplace_back                ( _Args&&... __args ) { if ( is_exit() ) { return; } { std::unique_lock<small::event> mlock( event_ );  queue_.emplace_back( std::forward<_Args>( __args )... ); } event_.set_event(); }
         
 
         // exit
-        void            signal_exit                 () { exit_flag_.store( true ); event_.set_event_type( EventType::kEvent_Manual ); event_.set_event(); /*event_.notify_all();*/ }
-        bool            is_exit                     () { return exit_flag_.load() == true; }
+        inline void     signal_exit                 () { exit_flag_.store( true ); event_.set_event_type( EventType::kEvent_Manual ); event_.set_event(); /*event_.notify_all();*/ }
+        inline bool     is_exit                     () { return exit_flag_.load() == true; }
         
 
 
         // wait pop_front and return that element
-        EnumEventQueue  wait_pop_front              ( T * elem )
+        inline EnumEventQueue wait_pop_front        ( T * elem )
         {
             if ( exit_flag_.load() == true )
                 return EnumEventQueue::kQueue_Exit;
@@ -94,7 +94,7 @@ namespace small
 
         // wait pop_front_for and return that element
         template<typename _Rep, typename _Period>
-        EnumEventQueue  wait_pop_front_for          ( const std::chrono::duration<_Rep, _Period>& __rtime, T* elem )
+        inline EnumEventQueue wait_pop_front_for    ( const std::chrono::duration<_Rep, _Period>& __rtime, T* elem )
         {
             using __dur = typename std::chrono::system_clock::duration;
             auto __reltime = std::chrono::duration_cast<__dur>(__rtime);
@@ -107,7 +107,7 @@ namespace small
 
         // wait until
         template<typename _Clock, typename _Duration>
-        EnumEventQueue  wait_pop_front_until        ( const std::chrono::time_point<_Clock, _Duration>& __atime, T* elem )
+        inline EnumEventQueue wait_pop_front_until  ( const std::chrono::time_point<_Clock, _Duration>& __atime, T* elem )
         {
             if ( exit_flag_.load() == true )
                 return EnumEventQueue::kQueue_Exit;
@@ -127,7 +127,7 @@ namespace small
 
     private:
         // check for front element
-        bool            test_and_get_front          ( T* elem )
+        inline bool     test_and_get_front          ( T* elem )
         {
             if ( exit_flag_.load() == true )
                 return true;

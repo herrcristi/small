@@ -64,35 +64,35 @@ namespace small
         
 
         // size
-        size_t          size                        () const { return queue_items_.size();  }
+        inline size_t   size                        () const { return queue_items_.size();  }
         // empty
-        bool            empty                       () const { return size() == 0; }
+        inline bool     empty                       () const { return size() == 0; }
         // clear
-        void            clear                       () { queue_items_.clear(); }
+        inline void     clear                       () { queue_items_.clear(); }
 
 
 
         // use it as locker (std::unique_lock<small:worker_thread<T>> m...)
-        void            lock                        () { queue_items_.lock();   }
-        void            unlock                      () { queue_items_.unlock(); }
-        bool            try_lock                    () { return queue_items_.try_lock(); }
+        inline void     lock                        () { queue_items_.lock();   }
+        inline void     unlock                      () { queue_items_.unlock(); }
+        inline bool     try_lock                    () { return queue_items_.try_lock(); }
         
 
 
 
         // add items to be processed
         // push_back
-        void            push_back                   ( const T& t ) { if ( is_exit() ) { return; } queue_items_.push_back( std::forward<T>( t ) ); start_threads(); }
-        void            push_back                   ( T&& t      ) { if ( is_exit() ) { return; } queue_items_.push_back( std::forward<T>( t ) ); start_threads(); }
+        inline void     push_back                   ( const T& t ) { if ( is_exit() ) { return; } queue_items_.push_back( std::forward<T>( t ) ); start_threads(); }
+        inline void     push_back                   ( T&& t      ) { if ( is_exit() ) { return; } queue_items_.push_back( std::forward<T>( t ) ); start_threads(); }
         // emplace_back
         template<typename... _Args>
-        void            emplace_back                ( _Args&&... __args ) { if ( is_exit() ) { return; } queue_items_.emplace_back( std::forward<_Args>( __args )... ); start_threads(); }
+        inline void     emplace_back                ( _Args&&... __args ) { if ( is_exit() ) { return; } queue_items_.emplace_back( std::forward<_Args>( __args )... ); start_threads(); }
         
 
 
         // signal exit
-        void            signal_exit                 () { queue_items_.signal_exit(); }
-        bool            is_exit                     () { return queue_items_.is_exit(); }
+        inline void     signal_exit                 () { queue_items_.signal_exit(); }
+        inline bool     is_exit                     () { return queue_items_.is_exit(); }
 
 
     private:
@@ -109,7 +109,7 @@ namespace small
 
 
         // thread function
-        void thread_function()
+        inline void     thread_function             ()
         {
             T elem;
             while ( 1 )
@@ -135,7 +135,7 @@ namespace small
 
 
         // create threads
-        void            start_threads               ()
+        inline void     start_threads               ()
         {
             // check first if threads were already started
             if ( threads_flag_created_.load() == true )
@@ -161,7 +161,7 @@ namespace small
 
 
         // stop threads
-        void            stop_threads                ()
+        inline void     stop_threads                ()
         {
             std::vector<std::thread> threads;
             {

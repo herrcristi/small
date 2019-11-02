@@ -44,17 +44,17 @@ namespace small
         event                                       ( const EventType& event_type = EventType::kEvent_Automatic ) : event_type_(event_type), event_value_(false){}
 
         // use it as locker (std::unique_lock<small:event> m...)
-        void            lock                        () { lock_.lock();   }
-        void            unlock                      () { lock_.unlock(); }
-        bool            try_lock                    () { return lock_.try_lock(); }
+        inline void     lock                        () { lock_.lock();   }
+        inline void     unlock                      () { lock_.unlock(); }
+        inline bool     try_lock                    () { return lock_.try_lock(); }
 
         
         // set type
-        void            set_event_type              ( const EventType& event_type = EventType::kEvent_Automatic ) { std::unique_lock<std::mutex> mlock( lock_ ); event_type_ = event_type; }
+        inline void     set_event_type              ( const EventType& event_type = EventType::kEvent_Automatic ) { std::unique_lock<std::mutex> mlock( lock_ ); event_type_ = event_type; }
 
 
         // set event 
-        void            set_event                   () 
+        inline void     set_event                   ()
         { 
             bool notify_all = false;
             { std::unique_lock<std::mutex> mlock( lock_ ); event_value_ = true; notify_all = event_type_ == EventType::kEvent_Manual; }
@@ -63,7 +63,7 @@ namespace small
         }
         
         // reset event
-        void            reset_event                 () 
+        inline void     reset_event                 ()
         { 
             { std::unique_lock<std::mutex> mlock( lock_ ); event_value_ = false; }
         }
@@ -71,7 +71,7 @@ namespace small
     
         
         // wait
-        void            wait                        () 
+        inline void     wait                        ()
         { 
             std::unique_lock<std::mutex> mlock( lock_ ); 
             while ( test_event_and_reset() == false )
@@ -80,7 +80,7 @@ namespace small
 
         // wait
         template<typename _Predicate>
-        void            wait                        ( _Predicate __p )
+        inline void     wait                        ( _Predicate __p )
         {
             std::unique_lock<std::mutex> mlock( lock_ );
             while ( !__p() )
@@ -101,7 +101,7 @@ namespace small
         
         // wait for (it uses wait_until)
         template<typename _Rep, typename _Period>
-        std::cv_status  wait_for                    ( const std::chrono::duration<_Rep, _Period>& __rtime ) 
+        inline std::cv_status wait_for              ( const std::chrono::duration<_Rep, _Period>& __rtime )
         { 
             using __dur = typename std::chrono::system_clock::duration;
             auto __reltime = std::chrono::duration_cast<__dur>(__rtime);
@@ -112,7 +112,7 @@ namespace small
 
         // wait_for
         template<typename _Rep, typename _Period, typename _Predicate>
-        bool            wait_for                    ( const std::chrono::duration<_Rep, _Period>& __rtime, _Predicate __p ) 
+        inline bool     wait_for                    ( const std::chrono::duration<_Rep, _Period>& __rtime, _Predicate __p )
         { 
             using __dur = typename std::chrono::system_clock::duration;
             auto __reltime = std::chrono::duration_cast<__dur>(__rtime);
@@ -126,7 +126,7 @@ namespace small
 
         // wait until
         template<typename _Clock, typename _Duration>
-        std::cv_status  wait_until                  ( const std::chrono::time_point<_Clock, _Duration>& __atime  ) 
+        inline std::cv_status wait_until            ( const std::chrono::time_point<_Clock, _Duration>& __atime  )
         { 
             std::unique_lock<std::mutex> mlock( lock_ ); 
             while ( test_event_and_reset() == false )
@@ -140,7 +140,7 @@ namespace small
 
         // wait_until
         template<typename _Clock, typename _Duration, typename _Predicate>
-        bool            wait_until                  ( const std::chrono::time_point<_Clock, _Duration>& __atime, _Predicate __p ) 
+        inline bool     wait_until                  ( const std::chrono::time_point<_Clock, _Duration>& __atime, _Predicate __p )
         { 
             std::unique_lock<std::mutex> mlock( lock_ );
             while ( !__p() )
@@ -168,7 +168,7 @@ namespace small
 
     private:
         // test event and consume it
-        bool            test_event_and_reset        ()
+        inline bool     test_event_and_reset        ()
         {
             if ( event_value_.load() == true )
             {

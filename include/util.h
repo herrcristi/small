@@ -51,7 +51,7 @@ namespace small
     // insensitive compare
     struct icasecmp
     {
-        bool            operator()                  ( const std::string& a, const std::string& b ) const
+        inline bool     operator()                  ( const std::string& a, const std::string& b ) const
         {
             return small::stricmp( a.c_str(), b.c_str() ) < 0;
         }
