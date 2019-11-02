@@ -59,31 +59,43 @@ namespace small
     //////////////////////////////////////////////////////////////////////////
     // as string
     inline std::string  tobase64_s                  ( const char* src, const int& src_length ) { std::string base64; tobase64( src, src_length, &base64 ); return base64; }
-    inline std::string  tobase64_s                  ( const std::string& src                 ) { return tobase64_s( src.c_str(), (int)src.size() ); }
+    inline std::string  tobase64_s                  ( const std::string&       src           ) { return tobase64_s( src.c_str(), (int)src.size() ); }
+    inline std::string  tobase64_s                  ( const std::vector<char>& src           ) { return tobase64_s( src.data(),  (int)src.size() ); }
+    inline std::string  tobase64_s                  ( const small::buffer&     src           ) { return tobase64_s( src.data(),  (int)src.size() ); }
 
     // as buffer vector<char>
     inline std::vector<char> tobase64_v             ( const char* src, const int& src_length ) { std::vector<char> base64; tobase64( src, src_length, &base64 ); return base64; }    
-    inline std::vector<char> tobase64_v             ( const std::string& src                 ) { return tobase64_v( src.c_str(), (int)src.size() ); }
+    inline std::vector<char> tobase64_v             ( const std::string&       src           ) { return tobase64_v( src.c_str(), (int)src.size() ); }
+    inline std::vector<char> tobase64_v             ( const std::vector<char>& src           ) { return tobase64_v( src.data(),  (int)src.size() ); }
+    inline std::vector<char> tobase64_v             ( const small::buffer&     src           ) { return tobase64_v( src.data(),  (int)src.size() ); }
 
     // as buffer
     inline small::buffer tobase64_b                 ( const char* src, const int& src_length ) { small::buffer base64; tobase64( src, src_length, &base64 ); return base64; }
-    inline small::buffer tobase64_b                 ( const std::string& src                 ) { return tobase64_b( src.c_str(), (int)src.size() ); }
+    inline small::buffer tobase64_b                 ( const std::string&       src           ) { return tobase64_b( src.c_str(), (int)src.size() ); }
+    inline small::buffer tobase64_b                 ( const std::vector<char>& src           ) { return tobase64_b( src.data(),  (int)src.size() ); }
+    inline small::buffer tobase64_b                 ( const small::buffer&     src           ) { return tobase64_b( src.data(),  (int)src.size() ); }
 
 
 
 
     // from base64_s
     inline std::string  frombase64_s                ( const char* base64, const int& base64_length ) { std::string decoded; frombase64( base64, base64_length, &decoded ); return decoded; }
-    inline std::string  frombase64_s                ( const std::string& base64              ) { return frombase64_s( base64.c_str(), (int)base64.size() ); }
+    inline std::string  frombase64_s                ( const std::string&        base64       ) { return frombase64_s( base64.c_str(), (int)base64.size() ); }
+    inline std::string  frombase64_s                ( const std::vector<char>&  base64       ) { return frombase64_s( base64.data(),  (int)base64.size() ); }
+    inline std::string  frombase64_s                ( const small::buffer&      base64       ) { return frombase64_s( base64.data(),  (int)base64.size() ); }
 
 
     // frombase64_v
     inline std::vector<char> frombase64_v           ( const char* base64, const int& base64_length ) { std::vector<char> decoded; frombase64( base64, base64_length, &decoded ); return decoded; }
-    inline std::vector<char> frombase64_v           ( const std::string& base64              ) { return frombase64_v( base64.c_str(), (int)base64.size() ); }
+    inline std::vector<char> frombase64_v           ( const std::string&        base64       ) { return frombase64_v( base64.c_str(), (int)base64.size() ); }
+    inline std::vector<char> frombase64_v           ( const std::vector<char>&  base64       ) { return frombase64_v( base64.data(),  (int)base64.size() ); }
+    inline std::vector<char> frombase64_v           ( const small::buffer&      base64       ) { return frombase64_v( base64.data(),  (int)base64.size() ); }
 
     // frombase64_b
     inline small::buffer frombase64_b               ( const char* base64, const int& base64_length ) { small::buffer decoded; frombase64( base64, base64_length, &decoded ); return decoded; }
-    inline small::buffer frombase64_b               ( const std::string& base64             ) { return frombase64_b( base64.c_str(), (int)base64.size() ); }
+    inline small::buffer frombase64_b               ( const std::string&        base64       ) { return frombase64_b( base64.c_str(), (int)base64.size() ); }
+    inline small::buffer frombase64_b               ( const std::vector<char>&  base64       ) { return frombase64_b( base64.data(),  (int)base64.size() ); }
+    inline small::buffer frombase64_b               ( const small::buffer&      base64       ) { return frombase64_b( base64.data(),  (int)base64.size() ); }
 
     
 }
