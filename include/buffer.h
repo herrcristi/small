@@ -104,12 +104,33 @@ namespace small
         inline char*    extract                     () { char* b =  nullptr; if ( buffer_ == empty_buffer_ ) { b = (char*) malloc(sizeof(char)); if (b) { *b='\0'; }  } else { b = buffer_; init( chunk_size_ ); } return b; }
 
 
-        // set
-        inline void     append                      ( const char* b, const size_t& b_length ) { set( b, b_length, size()/*startfrom*/ ); }
-        inline void     assign                      ( const char* b, const size_t& b_length ) { set( b, b_length,      0/*startfrom*/ ); }
-        inline void     overwrite                   ( const char* b, const size_t& b_length, const size_t& start_from = 0 ) { set( b, b_length, start_from ); }
+        // append
+        inline void     append                      ( const buffer& b           ) { set( b.data(),              b.size(),       size()/*startfrom*/ ); }
+        inline void     append                      ( const char* s, const size_t& s_length ) { set( s,         s_length,       size()/*startfrom*/ ); }
+        inline void     append                      ( const char* s             ) { set( s,                     strlen(s),      size()/*startfrom*/ ); }
+        inline void     append                      ( const char  c             ) { set( &c,                    sizeof(c),      size()/*startfrom*/ ); }
+        inline void     append                      ( const wchar_t* s          ) { set( (const char*)s,        sizeof(wchar_t) * wcslen(s), size()/*startfrom*/ ); }
+        inline void     append                      ( const wchar_t* s, const size_t& s_length ){ set( (const char*)s,  sizeof(wchar_t) * s_length, size()/*startfrom*/ ); }
+        inline void     append                      ( const wchar_t  c          ) { set( (const char*)&c,       sizeof(c),      size()/*startfrom*/ ); }
+        inline void     append                      ( const std::string& s      ) { set( s.c_str(),             s.size(),       size()/*startfrom*/ ); }
+        inline void     append                      ( const std::wstring& s     ) { set( (const char*)s.c_str(),sizeof(wchar_t) * s.size(), size()/*startfrom*/ ); }
+        inline void     append                      ( const std::vector<char>& v) { set( v.data(),              v.size(),       size()/*startfrom*/ ); }
 
+        // assign
+        inline void     assign                      ( const buffer& b           ) { set( b.data(),              b.size(),       0/*startfrom*/ ); }
+        inline void     assign                      ( const char* s, const size_t& s_length ) { set( s,         s_length,       0/*startfrom*/ ); }
+        inline void     assign                      ( const char* s             ) { set( s,                     strlen(s),      0/*startfrom*/ ); }
+        inline void     assign                      ( const char  c             ) { set( &c,                    sizeof(c),      0/*startfrom*/ ); }
+        inline void     assign                      ( const wchar_t* s          ) { set( (const char*)s,        sizeof(wchar_t) * wcslen(s), 0/*startfrom*/ ); }
+        inline void     assign                      ( const wchar_t* s, const size_t& s_length ){ set( (const char*)s,  sizeof(wchar_t) * s_length, 0/*startfrom*/ ); }
+        inline void     assign                      ( const wchar_t  c          ) { set( (const char*)&c,       sizeof(c),      0/*startfrom*/ ); }
+        inline void     assign                      ( const std::string& s      ) { set( s.c_str(),             s.size(),       0/*startfrom*/ ); }
+        inline void     assign                      ( const std::wstring& s     ) { set( (const char*)s.c_str(),sizeof(wchar_t) * s.size(), 0/*startfrom*/ ); }
+        inline void     assign                      ( const std::vector<char>& v) { set( v.data(),              v.size(),       0/*startfrom*/ ); }
+
+        // set
         inline void     set                         ( const char* b, const size_t& b_length, const size_t& start_from = 0 ) { set_impl( b, b_length, start_from ); }
+        inline void     overwrite                   ( const char* b, const size_t& b_length, const size_t& start_from = 0 ) { set( b, b_length, start_from ); }
 
         // insert
         inline void     insert                      ( const char* b, const size_t& b_length, const size_t& insert_from = 0 ) { insert_impl( b, b_length, insert_from ); }
@@ -120,15 +141,15 @@ namespace small
 
 
         // operators
-        inline buffer&  operator=                   ( const buffer& o ) noexcept { if ( this != &o ) { chunk_size_ = o.chunk_size_; reserve( o.size(), true/*shrink*/ ); set( o.data(), o.size() ); } return *this; }
-        inline buffer&  operator=                   ( buffer&&      o ) noexcept { if ( this != &o ) { clear( true ); memcpy( this, &o, sizeof( *this ) ); o.init( this->chunk_size_ ); } return *this; }
-        inline buffer&  operator=                   ( const char*   s ) noexcept { set( s,  strlen(s) ); return *this; }
-        inline buffer&  operator=                   ( const char    c ) noexcept { set( &c, sizeof(char) ); return *this; }
-        inline buffer&  operator=                   ( const wchar_t*s ) noexcept { set( (const char *)s,  sizeof(wchar_t) * wcslen(s) ); return *this; }
-        inline buffer&  operator=                   ( const wchar_t c ) noexcept { set( (const char *)&c, sizeof(wchar_t) ); return *this; }
-        inline buffer&  operator=                   ( const std::string&  s ) noexcept { set( s.c_str(), s.size() ); return *this; }
-        inline buffer&  operator=                   ( const std::wstring& s ) noexcept { set( (const char*)s.c_str(), sizeof(wchar_t) * s.size() ); return *this; }
-        inline buffer&  operator=                   ( const std::vector<char>& v ) noexcept { set( v.data(), v.size() ); return *this; }
+        inline buffer&  operator=                   ( const buffer& o           ) noexcept { if ( this != &o ) { chunk_size_ = o.chunk_size_; reserve( o.size(), true/*shrink*/ ); set( o.data(), o.size() ); } return *this; }
+        inline buffer&  operator=                   ( buffer&&      o           ) noexcept { if ( this != &o ) { clear( true ); memcpy( this, &o, sizeof( *this ) ); o.init( this->chunk_size_ ); } return *this; }
+        inline buffer&  operator=                   ( const char*   s           ) noexcept { set( s,                        strlen(s)                   ); return *this; }
+        inline buffer&  operator=                   ( const char    c           ) noexcept { set( &c,                       sizeof(char)                ); return *this; }
+        inline buffer&  operator=                   ( const wchar_t*s           ) noexcept { set( (const char *)s,          sizeof(wchar_t) * wcslen(s) ); return *this; }
+        inline buffer&  operator=                   ( const wchar_t c           ) noexcept { set( (const char *)&c,         sizeof(wchar_t)             ); return *this; }
+        inline buffer&  operator=                   ( const std::string&  s     ) noexcept { set( s.c_str(),                s.size()                    ); return *this; }
+        inline buffer&  operator=                   ( const std::wstring& s     ) noexcept { set( (const char*)s.c_str(),   sizeof(wchar_t) * s.size()  ); return *this; }
+        inline buffer&  operator=                   ( const std::vector<char>& v) noexcept { set( v.data(),                 v.size()                    ); return *this; }
         
 
     private:
