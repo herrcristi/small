@@ -50,9 +50,9 @@ namespace small
        
 
         // reserve / resize
-        inline void     reserve                     ( const size_t & new_size, const bool & shrink = false ) { ensure_size( new_size, shrink ); }
-        inline void     resize                      ( const size_t & new_size, const bool & shrink = false ) { buffer_length_ = ensure_size( new_size, shrink ); }
-        inline void     shrink_to_fit               ()                                                       { buffer_length_ = ensure_size( size(), true/*shrink*/); }
+        inline void     reserve                     ( const size_t new_size, const bool & shrink = false ) { ensure_size( new_size, shrink ); }
+        inline void     resize                      ( const size_t new_size, const bool & shrink = false ) { buffer_length_ = ensure_size( new_size, shrink ); }
+        inline void     shrink_to_fit               ()                                                     { buffer_length_ = ensure_size( size(), true/*shrink*/); }
 
 
 
@@ -80,13 +80,15 @@ namespace small
 
         // insert
         inline void     insert                      ( const char* b, const size_t& b_length, const size_t& insert_from = 0 ) { insert_impl( b, b_length, insert_from ); }
-        
+        // erase
+        inline void     erase                       ( const size_t& start_from ) { if ( start_from < size() ) { resize( start_from ); } }
+        inline void     erase                       ( const size_t& start_from, const size_t& length ) { erase_impl( start_from, length ); }
 
 
 
         // operators
-        inline buffer&  operator=                   ( const buffer& o)  { if ( this != &o ) { chunk_size_ = o.chunk_size_; reserve( o.buffer_length_, true/*shrink*/ ); set( o.buffer_, o.buffer_length_ ); } return *this; }
-        inline buffer&  operator=                   ( buffer&&      o ) { if ( this != &o ) { clear( true ); memcpy( this, &o, sizeof( *this ) ); o.init( this->chunk_size_ ); } return *this; }
+        inline buffer&  operator=                   ( const buffer& o ) noexcept { if ( this != &o ) { chunk_size_ = o.chunk_size_; reserve( o.size(), true/*shrink*/ ); set( o.data(), o.size() ); } return *this; }
+        inline buffer&  operator=                   ( buffer&&      o ) noexcept { if ( this != &o ) { clear( true ); memcpy( this, &o, sizeof( *this ) ); o.init( this->chunk_size_ ); } return *this; }
 
         
 
@@ -125,6 +127,7 @@ namespace small
                 return 0;
             }
             // return new_length of the buffer
+            buffer_[new_size] = '\0';
             return new_size;
         }
 
@@ -137,8 +140,7 @@ namespace small
             resize( start_from + b_length, false ); 
             if ( b && buffer_ != empty_buffer_ /*good allocation*/ ) 
             { 
-                memcpy( buffer_ + start_from, b, b_length ); 
-                buffer_[buffer_length_] = '\0'; 
+                memcpy( buffer_ + start_from, b, b_length );
             } 
         }
 
@@ -146,8 +148,9 @@ namespace small
         // insert impl
         inline void     insert_impl                 ( const char* b, const size_t& b_length, const size_t& insert_from = 0 ) 
         { 
-            size_t initial_length = buffer_length_;
-            resize( insert_from > buffer_length_ ? insert_from + b_length : buffer_length_ + b_length, false );
+            size_t initial_length = size();
+            resize( insert_from <= initial_length ? initial_length + b_length : insert_from + b_length, false );
+
             if ( b && buffer_ != empty_buffer_ /*good allocation*/ ) 
             { 
                 if ( insert_from <= initial_length )
@@ -155,8 +158,29 @@ namespace small
                 else
                     memset( buffer_ + initial_length, '\0', (insert_from-initial_length) );
                 memcpy( buffer_ + insert_from, b, b_length ); 
-                buffer_[buffer_length_] = '\0'; 
             } 
+        }
+
+
+        // erase
+        inline void     erase_impl                       ( const size_t& start_from, const size_t& length ) 
+        { 
+            if ( buffer_ != empty_buffer_ )
+            {
+                if ( start_from < size() )
+                {
+                    if ( start_from + length < size() )
+                    {
+                        size_t move_length = size() - (start_from + length);
+                        memmove( buffer_ + start_from, buffer_ + start_from + length, move_length );
+                        resize( size() - length );
+                    }
+                    else
+                    {
+                        resize( start_from );
+                    }
+                }
+            }
         }
 
 
