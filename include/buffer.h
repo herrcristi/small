@@ -1,6 +1,8 @@
 #pragma once
 
 #include <type_traits>
+#include <string>
+#include <vector>
 #include <string.h>
 #include <stddef.h>
 
@@ -13,6 +15,11 @@
 // 
 // char* e = b.extract(); // extract "anb"
 // free( e );
+//
+// small::buffer b1 = { 8192/*chunksize*/, "buffer", 6/*length*/ };
+// small::buffer b2 = { 8192/*chunksize*/, "buffer" };
+// small::buffer b3 = "buffer";
+// small::buffer b4 = std::string( "buffer" );
 // 
 // b.append( "hello", 5 );
 // b.clear( true );
@@ -30,15 +37,41 @@
 //
 namespace small
 {
+    const size_t default_buffer_chunk_size = 4096;
+
     // class for representing a buffer
     class buffer
     {
     public:
         // buffer (allocates in chunks)
-        buffer                                      ( const int& chunk = 4096 ) { init( chunk ); }
+        buffer                                      ( const size_t& chunk_size = default_buffer_chunk_size ) { init( chunk_size ); }
+        // from buffer
+        buffer                                      ( const buffer& o ) noexcept                    { init( o.chunk_size_ ); operator=( o ); }
+        buffer                                      ( buffer&&      o ) noexcept                    { init( o.chunk_size_ ); operator=( std::forward<buffer>( o ) ); }
+        // from char*
+        buffer                                      ( const char *  s )                             { init( default_buffer_chunk_size ); operator=( s ); }
+        buffer                                      ( const size_t& chunk_size, const char * s)     { init( chunk_size ); operator=( s ); }
+        buffer                                      ( const size_t& chunk_size, const char * s, const size_t& s_length) { init( chunk_size ); set( s, s_length ); }
+        // from wchar_t*
+        buffer                                      ( const wchar_t *  s )                          { init( default_buffer_chunk_size ); operator=( s ); }
+        buffer                                      ( const size_t& chunk_size, const wchar_t* s)   { init( chunk_size ); operator=( s ); }
+        buffer                                      ( const size_t& chunk_size, const wchar_t* s, const size_t& s_length) { init( chunk_size ); set( (const char*)s, sizeof(wchar_t) * s_length ); }
+        // from char
+        buffer                                      ( const char c    )                             { init( default_buffer_chunk_size ); operator=( c ); }
+        buffer                                      ( const size_t& chunk_size, const char c  )     { init( chunk_size ); operator=( c ); }
+        // from wchar_t
+        buffer                                      ( const wchar_t c    )                          { init( default_buffer_chunk_size ); operator=( c ); }
+        buffer                                      ( const size_t& chunk_size, const wchar_t c  )  { init( chunk_size ); operator=( c ); }
+        // from std::string
+        buffer                                      ( const std::string& s )                        { init( default_buffer_chunk_size ); operator=( s ); }
+        buffer                                      ( const size_t& chunk_size, const std::string& s) { init( chunk_size ); operator=( s ); }
+        // from std::wstring
+        buffer                                      ( const std::wstring& s )                       { init( default_buffer_chunk_size ); operator=( s ); }
+        buffer                                      ( const size_t& chunk_size, const std::wstring& s) { init( chunk_size ); operator=( s ); }
+        // from std::vector<char>
+        buffer                                      ( const std::vector<char>& v )                  { init( default_buffer_chunk_size ); operator=( v ); }
+        buffer                                      ( const size_t& chunk_size, const std::vector<char>& v) { init( chunk_size ); operator=( v ); }
 
-        buffer                                      ( const buffer& o) { init( o.chunk_size_ ); operator=( o ); }
-        buffer                                      ( buffer&&      o) { init( o.chunk_size_ ); operator=( std::forward<buffer>( o ) ); }
         // destructor
         ~buffer                                     () { free_buffer(); }
     
@@ -89,7 +122,13 @@ namespace small
         // operators
         inline buffer&  operator=                   ( const buffer& o ) noexcept { if ( this != &o ) { chunk_size_ = o.chunk_size_; reserve( o.size(), true/*shrink*/ ); set( o.data(), o.size() ); } return *this; }
         inline buffer&  operator=                   ( buffer&&      o ) noexcept { if ( this != &o ) { clear( true ); memcpy( this, &o, sizeof( *this ) ); o.init( this->chunk_size_ ); } return *this; }
-
+        inline buffer&  operator=                   ( const char*   s ) noexcept { set( s,  strlen(s) ); return *this; }
+        inline buffer&  operator=                   ( const char    c ) noexcept { set( &c, sizeof(char) ); return *this; }
+        inline buffer&  operator=                   ( const wchar_t*s ) noexcept { set( (const char *)s,  sizeof(wchar_t) * wcslen(s) ); return *this; }
+        inline buffer&  operator=                   ( const wchar_t c ) noexcept { set( (const char *)&c, sizeof(wchar_t) ); return *this; }
+        inline buffer&  operator=                   ( const std::string&  s ) noexcept { set( s.c_str(), s.size() ); return *this; }
+        inline buffer&  operator=                   ( const std::wstring& s ) noexcept { set( (const char*)s.c_str(), sizeof(wchar_t) * s.size() ); return *this; }
+        inline buffer&  operator=                   ( const std::vector<char>& v ) noexcept { set( v.data(), v.size() ); return *this; }
         
 
     private:

@@ -234,6 +234,11 @@ b.set( "b", 1, 2 );
     
 char* e = b.extract(); // extract "anb"
 free( e );
+
+small::buffer b1 = { 8192/*chunksize*/, "buffer", 6/*specified length*/ };
+small::buffer b2 = { 8192/*chunksize*/, "buffer" };
+small::buffer b3 = "buffer";
+small::buffer b4 = std::string( "buffer" );
     
 b.append( "hello", 5 );
 b.clear( true );
