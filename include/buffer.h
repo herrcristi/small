@@ -47,19 +47,40 @@ namespace small
         inline size_t   size                        () const { return buffer_length_;  }
         inline bool     empty                       () const { return buffer_length_ == 0; }
         inline void     clear                       ( const bool & __free_buffer = false ) { buffer_length_ = 0; if ( __free_buffer ) { free_buffer(); } buffer_[0] = '\0'; }
-        
-        // data
-        inline const char* data                     () const { return buffer_; }
-        // extract buffer - be sure to call free after you use it
-        inline char*    extract                     () { char* b =  nullptr; if ( buffer_ == empty_buffer_ ) { b = (char*) malloc(sizeof(char)); if (b) { *b='\0'; }  } else { b = buffer_; init( chunk_size_ ); } return b; }
+       
 
         // reserve / resize
         inline void     reserve                     ( const size_t & new_size, const bool & shrink = false ) { ensure_size( new_size, shrink ); }
         inline void     resize                      ( const size_t & new_size, const bool & shrink = false ) { buffer_length_ = ensure_size( new_size, shrink ); }
+        inline void     shrink_to_fit               ()                                                       { buffer_length_ = ensure_size( size(), true/*shrink*/); }
+
+
+
+        // chunk size
+        inline size_t   get_chunk_size              () const { return chunk_size_; }
+        inline void     set_chunk_size              ( const size_t & chunk_size ){ chunk_size_ = chunk_size; }
+
+        // data buffer
+        inline const char* get_buffer               () const { return buffer_; }
+        inline char*    get_buffer                  () { return buffer_; }
+        inline const char* data                     () const { return buffer_; }
+        inline char*    data                        () { return buffer_; }
+
+
+        // extract buffer - be sure to call free after you use it
+        inline char*    extract                     () { char* b =  nullptr; if ( buffer_ == empty_buffer_ ) { b = (char*) malloc(sizeof(char)); if (b) { *b='\0'; }  } else { b = buffer_; init( chunk_size_ ); } return b; }
+
 
         // set
-        inline void     append                      ( const char* b, const size_t& b_length ) { set( b, b_length, size() ); }
-        inline void     set                         ( const char* b, const size_t& b_length, const size_t& start_from = 0 )  { resize( start_from + b_length, false ); if ( b && buffer_ != empty_buffer_ /*good allocation*/ ) { memcpy( buffer_ + start_from, b, b_length ); buffer_[buffer_length_] = '\0'; } }
+        inline void     append                      ( const char* b, const size_t& b_length ) { set( b, b_length, size()/*startfrom*/ ); }
+        inline void     assign                      ( const char* b, const size_t& b_length ) { set( b, b_length,      0/*startfrom*/ ); }
+        inline void     overwrite                   ( const char* b, const size_t& b_length, const size_t& start_from = 0 ) { set( b, b_length, start_from ); }
+
+        inline void     set                         ( const char* b, const size_t& b_length, const size_t& start_from = 0 ) { set_impl( b, b_length, start_from ); }
+
+        // insert
+        inline void     insert                      ( const char* b, const size_t& b_length, const size_t& insert_from = 0 ) { insert_impl( b, b_length, insert_from ); }
+        
 
 
 
@@ -67,7 +88,7 @@ namespace small
         inline buffer&  operator=                   ( const buffer& o)  { if ( this != &o ) { chunk_size_ = o.chunk_size_; reserve( o.buffer_length_, true/*shrink*/ ); set( o.buffer_, o.buffer_length_ ); } return *this; }
         inline buffer&  operator=                   ( buffer&&      o ) { if ( this != &o ) { clear( true ); memcpy( this, &o, sizeof( *this ) ); o.init( this->chunk_size_ ); } return *this; }
 
-
+        
 
     private:
         // init
@@ -107,12 +128,45 @@ namespace small
             return new_size;
         }
 
+
+
+
+        // set impl
+        inline void     set_impl                    ( const char* b, const size_t& b_length, const size_t& start_from = 0 ) 
+        { 
+            resize( start_from + b_length, false ); 
+            if ( b && buffer_ != empty_buffer_ /*good allocation*/ ) 
+            { 
+                memcpy( buffer_ + start_from, b, b_length ); 
+                buffer_[buffer_length_] = '\0'; 
+            } 
+        }
+
+
+        // insert impl
+        inline void     insert_impl                 ( const char* b, const size_t& b_length, const size_t& insert_from = 0 ) 
+        { 
+            size_t initial_length = buffer_length_;
+            resize( insert_from > buffer_length_ ? insert_from + b_length : buffer_length_ + b_length, false );
+            if ( b && buffer_ != empty_buffer_ /*good allocation*/ ) 
+            { 
+                if ( insert_from <= initial_length )
+                    memmove( buffer_ + insert_from + b_length, buffer_ + insert_from, initial_length-insert_from );
+                else
+                    memset( buffer_ + initial_length, '\0', (insert_from-initial_length) );
+                memcpy( buffer_ + insert_from, b, b_length ); 
+                buffer_[buffer_length_] = '\0'; 
+            } 
+        }
+
+
+
     private:
         // chunk size
         size_t          chunk_size_;
         // buffer empty
         char            empty_buffer_[1];
-        // buffer
+        // buffer use char* instead of vector<char> because it is much faster
         char *          buffer_;
         size_t          buffer_length_;
         size_t          buffer_alloc_size_;
