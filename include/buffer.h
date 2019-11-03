@@ -141,9 +141,13 @@ namespace small
         // erase
         inline void     erase                       ( const size_t& start_from ) { if ( start_from < size() ) { resize( start_from ); } }
         inline void     erase                       ( const size_t& start_from, const size_t& length ) { erase_impl( start_from, length ); }
+        
         // compare
         inline bool     is_equal                    ( const char *s, const size_t& s_length ) const { return size() == s_length && compare( s, s_length ) == 0; }
         inline int      compare                     ( const char *s, const size_t& s_length ) const { return memcmp( data(), s, size() < s_length ? size()+1 : s_length+1 ); }
+
+        // swap
+        inline void     swap                        ( buffer & o ) { swap_impl( o ); }
 
 
         // operators
@@ -176,6 +180,15 @@ namespace small
 
         inline char&    at                          ( const size_t& index       ) { return buffer_[ index ]; }
         inline const char at                        ( const size_t& index       ) const { return buffer_[ index ]; }
+
+        inline char&    front                       () { return buffer_[ 0 ]; }
+        inline const char front                     () const { return buffer_[ 0 ]; }
+        inline char&    back                        () { return size() > 0 ? buffer_[ size()-1 ] : buffer_[0]; }
+        inline const char back                      () const { return size() > 0 ? buffer_[size() - 1] : buffer_[0]; }
+
+        inline void     push_back                   ( const char c ) { append( c ); }
+        inline void     pop_back                    () { if ( size() > 0 ) { resize( size() - 1 ); } }
+
 
         // as c_string
         inline std::string c_string                 () const { return std::string( data(), size() ); }
@@ -275,6 +288,19 @@ namespace small
             }
         }
 
+
+        // swap
+        inline void     swap_impl                   ( buffer& o )
+        {
+            std::swap( chunk_size_,         o.chunk_size_           ); 
+            std::swap( buffer_length_,      o.buffer_length_        ); 
+            std::swap( buffer_alloc_size_,  o.buffer_alloc_size_    );
+            // swap buffer has 4 cases
+            if ( buffer_ != empty_buffer_ && o.buffer_ != o.empty_buffer_ )      { std::swap( buffer_, o.buffer_ ); }
+            else if ( buffer_ == empty_buffer_ && o.buffer_ == o.empty_buffer_ ) { /*no nothing*/ }
+            else if ( buffer_ != empty_buffer_ && o.buffer_ == o.empty_buffer_ ) { o.buffer_ = buffer_;    buffer_   = empty_buffer_; }
+            else if ( buffer_ == empty_buffer_ && o.buffer_ != o.empty_buffer_ ) { buffer_   = o.buffer_;  o.buffer_ = o.empty_buffer_; }
+        }
 
 
     private:
