@@ -1,10 +1,12 @@
 #pragma once
 
-#include <type_traits>
-#include <string>
-#include <vector>
 #include <string.h>
 #include <stddef.h>
+
+#include <type_traits>
+#include <string>
+#include <string_view>
+#include <vector>
 
 // 
 // small::buffer b;
@@ -103,6 +105,12 @@ namespace small
         inline char*    get_buffer                  () { return buffer_; }
         inline char*    data                        () { return buffer_; }
 
+                // as c_string
+        inline std::string c_string                 () const { return std::string( data(), size() ); }
+        inline std::vector<char> c_vector           () const { std::vector<char> v( size() ); memcpy( v.data(), data(), size() ); return v; }
+        inline std::string_view c_view              () const { return std::string_view{ data(), size() }; }
+
+
 
         // extract buffer - be sure to call free after you use it
         inline char*    extract                     () { char* b =  nullptr; if ( buffer_ == empty_buffer_ ) { b = (char*) malloc(sizeof(char)); if (b) { *b='\0'; }  } else { b = buffer_; init( chunk_size_ ); } return b; }
@@ -190,11 +198,8 @@ namespace small
         inline void     pop_back                    () { if ( size() > 0 ) { resize( size() - 1 ); } }
 
 
-        // as c_string
-        inline std::string c_string                 () const { return std::string( data(), size() ); }
-        inline std::vector<char> c_vector           () const { std::vector<char> v( size() ); memcpy( v.data(), data(), size() ); return v; }
-
-
+        // operator
+        inline          operator std::string_view   () { return c_view(); }
 
 
     private:
