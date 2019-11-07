@@ -14,22 +14,22 @@ namespace small
         stack_string                                () { init(); }
 
         // from stack_string
-        stack_string                                ( const stack_string& o ) noexcept : stack_string() { init(); operator=( o ); }
-        stack_string                                ( stack_string&&      o ) noexcept : stack_string() { init(); operator=( std::forward<stack_string>( o ) ); }
+        stack_string                                ( const stack_string& o ) noexcept : stack_string() { operator=( o ); }
+        stack_string                                ( stack_string&&      o ) noexcept : stack_string() { operator=( std::forward<stack_string>( o ) ); }
         // from char*
-        stack_string                                ( const char* s )                  : stack_string() { init(); operator=( s ); }
-        stack_string                                ( const char* s, const size_t& s_length ) : stack_string() { init(); set( s, s_length ); }
+        stack_string                                ( const char* s )                  : stack_string() { operator=( s ); }
+        stack_string                                ( const char* s, const size_t& s_length ) : stack_string() { set( s, s_length ); }
         // from wchar_t*
-        stack_string                                ( const wchar_t *s )               : stack_string() { init(); operator=( s ); }
-        stack_string                                ( const wchar_t *s, const size_t& s_length ) : stack_string() { init(); set( s, s_length ); }
+        stack_string                                ( const wchar_t *s )               : stack_string() {  operator=( s ); }
+        stack_string                                ( const wchar_t *s, const size_t& s_length ) : stack_string() { set( s, s_length ); }
         // from char
-        stack_string                                ( const char c    )                : stack_string() { init(); operator=( c ); }
+        stack_string                                ( const char c    )                : stack_string() { operator=( c ); }
         // from wchar_t
-        stack_string                                ( const wchar_t c    )             : stack_string() { init(); operator=( c ); }
+        stack_string                                ( const wchar_t c    )             : stack_string() { operator=( c ); }
         // from std::string
-        stack_string                                ( const std::string& s )           : stack_string() { init(); operator=( s ); }
+        stack_string                                ( const std::string& s )           : stack_string() { operator=( s ); }
         // from std::wstring
-        stack_string                                ( const std::wstring& s )          : stack_string() { init(); operator=( s ); }
+        stack_string                                ( const std::wstring& s )          : stack_string() { operator=( s ); }
 
         // destructor
         ~stack_string                               () { }
@@ -50,9 +50,9 @@ namespace small
 
 
         // data
-        inline const char* c_str                    () const { return std_string_ ? std_string_.get()->c_str() : stack_string_; }
-        inline const char* data                     () const { return std_string_ ? std_string_.get()->c_str() : stack_string_; }
-        inline char*    data                        ()       { return std_string_ ? std_string_.get()->c_str() : stack_string_; }
+        inline const char* c_str                    () const { return std_string_ ? std_string_.get()->c_str() : stack_string_.data(); }
+        inline const char* data                     () const { return std_string_ ? std_string_.get()->data() : stack_string_.dta(); }
+        inline char*    data                        ()       { return std_string_ ? std_string_.get()->data() : stack_string_.data(); }
 
         // as c_string
         inline std::string c_string                 () const { return std_string_ ? *std_string_.get() : std::string( stack_string_, stack_string_size_ ); }
@@ -188,7 +188,7 @@ namespace small
             {
                 if ( !std_string_ )
                 {
-                    std_string_ = std::make_shared<std::string>( stack_string_, stack_string_size_ );
+                    std_string_ = std::make_unique<std::string>( stack_string_.data(), stack_string_size_ );
                 } 
             }
         }
@@ -197,14 +197,15 @@ namespace small
         inline void     set_impl                    ( const char* b, const size_t& b_length, const size_t& start_from = 0 ) 
         { 
             resize( start_from + b_length ); 
-            if ( std_string_ )
-            {
-                memcpy( stack_string_.get()->data() + start_from, b, b_length );
-            }
-            else
-            {
-                memcpy( stack_string_ + start_from, b, b_length );
-            }
+            //if ( std_string_ )
+            //{
+            //    memcpy( std_string_.get()->data() + start_from, b, b_length );
+            //}
+            //else
+            //{
+            //    memcpy( stack_string_.data() + start_from, b, b_length );
+            //}
+            memcpy( data() + start_from, b, b_length );
         }
 
          // set impl
