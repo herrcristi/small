@@ -15,6 +15,12 @@ Contains usefull everyday features to be used like:
 * util functions
 
 #
+For windows if you include windows.h you must undefine small because there is a collision
+
+```
+#include <windows.h>
+#undef small
+```
 
 ### spinlock (or critical_section)
 Spinlock is just like a mutex but it uses atomic lockless to do locking (based on std::atomic_flag).
