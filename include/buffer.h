@@ -83,6 +83,7 @@ namespace small
 
          // size / empty / clear
         inline size_t   size                        () const { return buffer_length_;  }
+        inline size_t   length                      () const { return buffer_length_;  }
         inline bool     empty                       () const { return buffer_length_ == 0; }
         inline void     clear                       ( const bool & __free_buffer = false ) { buffer_length_ = 0; if ( __free_buffer ) { free_buffer(); } buffer_[0] = '\0'; }
        
