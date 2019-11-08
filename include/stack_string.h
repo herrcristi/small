@@ -1,6 +1,10 @@
 #pragma once
 
+#include <stdlib.h>
+
 #include <array>
+#include <clocale>
+#include <cwchar>
 #include <string>
 
 
@@ -224,10 +228,31 @@ namespace small
         }
 
          // set impl
-        inline void     set_impl                    ( const wchar_t* b, const size_t& b_length, const size_t& start_from = 0 ) 
+        inline void     set_impl                    ( const wchar_t* wstr, const size_t& wstr_length, const size_t& start_from = 0 )
         { 
-           //TODO
-           
+            std::setlocale( LC_ALL, "en_US.utf8" );
+            std::mbstate_t state = std::mbstate_t();
+            
+            // determine size
+            
+#ifdef _WIN32
+            size_t new_length = 0;
+            int ret = wcsrtombs_s( &new_length, nullptr, 0, &wstr, wstr_length, &state );
+            if ( ret != 0 || new_length == 0 )
+                return;
+            --new_length; // because it adds the null terminator in length
+            resize( start_from + new_length );
+
+            size_t converted = 0;
+            ret = wcsrtombs_s( &converted, data() + start_from, new_length + 1, &wstr, new_length, &state );
+#else
+            size_t new_length = std::wcsrtombs( nullptr, &wstr, 0, &state );
+            if ( new_length == static_cast<std::size_t>(-1) )
+                return;
+            
+            resize( start_from + new_length );
+            /*size_t converted =*/ std::wcsrtombs( data() + start_from, &wstr, new_length, &state );
+#endif 
         }
 
 
