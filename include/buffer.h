@@ -76,6 +76,9 @@ namespace small
         // from std::vector<char>
         buffer                                      ( const std::vector<char>& v )                  { init( default_buffer_chunk_size ); operator=( v ); }
         buffer                                      ( const size_t& chunk_size, const std::vector<char>& v) { init( chunk_size ); operator=( v ); }
+        // from std::string_view
+        buffer                                      ( const std::string_view s )                    { init( default_buffer_chunk_size ); operator=( s ); }
+        buffer                                      ( const size_t& chunk_size, const std::string_view s) { init( chunk_size ); operator=( s ); }
 
         // destructor
         ~buffer                                     () { free_buffer(); }
@@ -128,6 +131,7 @@ namespace small
         inline void     append                      ( const std::string& s      ) { set( s.c_str(),             s.size(),       size()/*startfrom*/ ); }
         inline void     append                      ( const std::wstring& s     ) { set( (const char*)s.c_str(),sizeof(wchar_t) * s.size(), size()/*startfrom*/ ); }
         inline void     append                      ( const std::vector<char>& v) { set( v.data(),              v.size(),       size()/*startfrom*/ ); }
+        inline void     append                      ( const std::string_view s  ) { set( s.data(),              s.size(),       size()/*startfrom*/ ); }
 
         // assign
         inline void     assign                      ( const buffer& b           ) { if ( this != &b ) { set( b.data(), b.size(), 0/*startfrom*/ ); } }
@@ -140,6 +144,8 @@ namespace small
         inline void     assign                      ( const std::string& s      ) { set( s.c_str(),             s.size(),       0/*startfrom*/ ); }
         inline void     assign                      ( const std::wstring& s     ) { set( (const char*)s.c_str(),sizeof(wchar_t) * s.size(), 0/*startfrom*/ ); }
         inline void     assign                      ( const std::vector<char>& v) { set( v.data(),              v.size(),       0/*startfrom*/ ); }
+        inline void     assign                      ( const std::string_view s  ) { set( s.data(),              s.size(),       0/*startfrom*/ ); }
+
 
         // set
         inline void     set                         ( const char* s, const size_t& s_length, const size_t& start_from = 0 ) { set_impl( s, s_length, start_from ); }
@@ -171,6 +177,7 @@ namespace small
         inline buffer&  operator=                   ( const std::string&  s     ) noexcept { set( s.c_str(),                s.size()                    ); return *this; }
         inline buffer&  operator=                   ( const std::wstring& s     ) noexcept { set( (const char*)s.c_str(),   sizeof(wchar_t) * s.size()  ); return *this; }
         inline buffer&  operator=                   ( const std::vector<char>& v) noexcept { set( v.data(),                 v.size()                    ); return *this; }
+        inline buffer&  operator=                   ( const std::string_view  s ) noexcept { set( s.data(),                 s.size()                    ); return *this; }
         
         // +=
         inline buffer&  operator+=                  ( const buffer& b           ) noexcept { append( b.data(),              b.size()                    ); return *this; }
@@ -181,6 +188,7 @@ namespace small
         inline buffer&  operator+=                  ( const std::string&  s     ) noexcept { append( s.c_str(),             s.size()                    ); return *this; }
         inline buffer&  operator+=                  ( const std::wstring& s     ) noexcept { append( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); return *this; }
         inline buffer&  operator+=                  ( const std::vector<char>& v) noexcept { append( v.data(),              v.size()                    ); return *this; }
+        inline buffer&  operator+=                  ( const std::string_view s  ) noexcept { append( s.data(),              s.size()                    ); return *this; }
         
 
         // []
@@ -336,6 +344,7 @@ namespace small
     inline buffer       operator+                   ( const buffer& b, const std::string&  s     ) { buffer br = b; br.append( s.c_str(),             s.size()                    ); return br; }
     inline buffer       operator+                   ( const buffer& b, const std::wstring& s     ) { buffer br = b; br.append( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); return br; }
     inline buffer       operator+                   ( const buffer& b, const std::vector<char>& v) { buffer br = b; br.append( v.data(),              v.size()                    ); return br; }
+    inline buffer       operator+                   ( const buffer& b, const std::string_view s  ) { buffer br = b; br.append( s.data(),              s.size()                    ); return br; }
 
     inline buffer       operator+                   ( const char*   s           , const buffer& b) { buffer br ( b.get_chunk_size() ); br.append( s,                     strlen(s)                   ); br += b; return br; }
     inline buffer       operator+                   ( const char    c           , const buffer& b) { buffer br ( b.get_chunk_size() ); br.append( &c,                    sizeof(char)                ); br += b; return br; }
@@ -344,24 +353,27 @@ namespace small
     inline buffer       operator+                   ( const std::string&  s     , const buffer& b) { buffer br ( b.get_chunk_size() ); br.append( s.c_str(),             s.size()                    ); br += b; return br; }
     inline buffer       operator+                   ( const std::wstring& s     , const buffer& b) { buffer br ( b.get_chunk_size() ); br.append( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); br += b; return br; }
     inline buffer       operator+                   ( const std::vector<char>& v, const buffer& b) { buffer br ( b.get_chunk_size() ); br.append( v.data(),              v.size()                    ); br += b; return br; }
+    inline buffer       operator+                   ( const std::string_view s  , const buffer& b) { buffer br ( b.get_chunk_size() ); br.append( s.data(),              s.size()                    ); br += b; return br; }
 
     // ==
-    inline bool         operator==                  ( const buffer& b, const buffer& b2          ) { return b.is_equal( b2.data(),             b2.size()                   ); }
-    inline bool         operator==                  ( const buffer& b, const char*   s           ) { return b.is_equal( s,                     strlen(s)                   ); }
-    inline bool         operator==                  ( const buffer& b, const char    c           ) { return b.is_equal( &c,                    sizeof(char)                ); }
-    inline bool         operator==                  ( const buffer& b, const wchar_t*s           ) { return b.is_equal( (const char *)s,       sizeof(wchar_t) * wcslen(s) ); }
-    inline bool         operator==                  ( const buffer& b, const wchar_t c           ) { return b.is_equal( (const char *)&c,      sizeof(wchar_t)             ); }
-    inline bool         operator==                  ( const buffer& b, const std::string&  s     ) { return b.is_equal( s.c_str(),             s.size()                    ); }
-    inline bool         operator==                  ( const buffer& b, const std::wstring& s     ) { return b.is_equal( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); }
-    inline bool         operator==                  ( const buffer& b, const std::vector<char>& v) { return b.is_equal( v.data(),              v.size()                    ); }
+    inline bool         operator==                  ( const buffer& b, const buffer& b2          ) { return b.is_equal( b2.data(),              b2.size()                   ); }
+    inline bool         operator==                  ( const buffer& b, const char*   s           ) { return b.is_equal( s,                      strlen(s)                   ); }
+    inline bool         operator==                  ( const buffer& b, const char    c           ) { return b.is_equal( &c,                     sizeof(char)                ); }
+    inline bool         operator==                  ( const buffer& b, const wchar_t*s           ) { return b.is_equal( (const char *)s,        sizeof(wchar_t) * wcslen(s) ); }
+    inline bool         operator==                  ( const buffer& b, const wchar_t c           ) { return b.is_equal( (const char *)&c,       sizeof(wchar_t)             ); }
+    inline bool         operator==                  ( const buffer& b, const std::string&  s     ) { return b.is_equal( s.c_str(),              s.size()                    ); }
+    inline bool         operator==                  ( const buffer& b, const std::wstring& s     ) { return b.is_equal( (const char*)s.c_str(), sizeof(wchar_t) * s.size()  ); }
+    inline bool         operator==                  ( const buffer& b, const std::vector<char>& v) { return b.is_equal( v.data(),               v.size()                    ); }
+    inline bool         operator==                  ( const buffer& b, const std::string_view s  ) { return b.is_equal( s.data(),               s.size()                    ); }
                                                                                                               
-    inline bool         operator==                  ( const char*   s           , const buffer& b) { return b.is_equal( s,                     strlen(s)                   ); }
-    inline bool         operator==                  ( const char    c           , const buffer& b) { return b.is_equal( &c,                    sizeof(char)                ); }
-    inline bool         operator==                  ( const wchar_t*s           , const buffer& b) { return b.is_equal( (const char *)s,       sizeof(wchar_t) * wcslen(s) ); }
-    inline bool         operator==                  ( const wchar_t c           , const buffer& b) { return b.is_equal( (const char *)&c,      sizeof(wchar_t)             ); }
-    inline bool         operator==                  ( const std::string&  s     , const buffer& b) { return b.is_equal( s.c_str(),             s.size()                    ); }
-    inline bool         operator==                  ( const std::wstring& s     , const buffer& b) { return b.is_equal( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); }
-    inline bool         operator==                  ( const std::vector<char>& v, const buffer& b) { return b.is_equal( v.data(),              v.size()                    ); }
+    inline bool         operator==                  ( const char*   s           , const buffer& b) { return b.is_equal( s,                      strlen(s)                   ); }
+    inline bool         operator==                  ( const char    c           , const buffer& b) { return b.is_equal( &c,                     sizeof(char)                ); }
+    inline bool         operator==                  ( const wchar_t*s           , const buffer& b) { return b.is_equal( (const char *)s,        sizeof(wchar_t) * wcslen(s) ); }
+    inline bool         operator==                  ( const wchar_t c           , const buffer& b) { return b.is_equal( (const char *)&c,       sizeof(wchar_t)             ); }
+    inline bool         operator==                  ( const std::string&  s     , const buffer& b) { return b.is_equal( s.c_str(),              s.size()                    ); }
+    inline bool         operator==                  ( const std::wstring& s     , const buffer& b) { return b.is_equal( (const char*)s.c_str(), sizeof(wchar_t) * s.size()  ); }
+    inline bool         operator==                  ( const std::vector<char>& v, const buffer& b) { return b.is_equal( v.data(),               v.size()                    ); }
+    inline bool         operator==                  ( const std::string_view s  , const buffer& b) { return b.is_equal( s.data(),               s.size()                    ); }
 
     // !=
     inline bool         operator!=                  ( const buffer& b, const buffer& b2          ) { return !b.is_equal( b2.data(),             b2.size()                   ); }
@@ -372,6 +384,7 @@ namespace small
     inline bool         operator!=                  ( const buffer& b, const std::string&  s     ) { return !b.is_equal( s.c_str(),             s.size()                    ); }
     inline bool         operator!=                  ( const buffer& b, const std::wstring& s     ) { return !b.is_equal( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); }
     inline bool         operator!=                  ( const buffer& b, const std::vector<char>& v) { return !b.is_equal( v.data(),              v.size()                    ); }
+    inline bool         operator!=                  ( const buffer& b, const std::string_view s  ) { return !b.is_equal( s.data(),              s.size()                    ); }
                                                                                                      
     inline bool         operator!=                  ( const char*   s           , const buffer& b) { return !b.is_equal( s,                     strlen(s)                   ); }
     inline bool         operator!=                  ( const char    c           , const buffer& b) { return !b.is_equal( &c,                    sizeof(char)                ); }
@@ -380,80 +393,89 @@ namespace small
     inline bool         operator!=                  ( const std::string&  s     , const buffer& b) { return !b.is_equal( s.c_str(),             s.size()                    ); }
     inline bool         operator!=                  ( const std::wstring& s     , const buffer& b) { return !b.is_equal( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); }
     inline bool         operator!=                  ( const std::vector<char>& v, const buffer& b) { return !b.is_equal( v.data(),              v.size()                    ); }
+    inline bool         operator!=                  ( const std::string_view s  , const buffer& b) { return !b.is_equal( s.data(),              s.size()                    ); }
 
 
      // < 
-    inline bool         operator<                   ( const buffer& b, const buffer& b2          ) { return b.compare( b2.data(),             b2.size()                   ) < 0; }
-    inline bool         operator<                   ( const buffer& b, const char*   s           ) { return b.compare( s,                     strlen(s)                   ) < 0; }
-    inline bool         operator<                   ( const buffer& b, const char    c           ) { return b.compare( &c,                    sizeof(char)                ) < 0; }
-    inline bool         operator<                   ( const buffer& b, const wchar_t*s           ) { return b.compare( (const char *)s,       sizeof(wchar_t) * wcslen(s) ) < 0; }
-    inline bool         operator<                   ( const buffer& b, const wchar_t c           ) { return b.compare( (const char *)&c,      sizeof(wchar_t)             ) < 0; }
-    inline bool         operator<                   ( const buffer& b, const std::string&  s     ) { return b.compare( s.c_str(),             s.size()                    ) < 0; }
-    inline bool         operator<                   ( const buffer& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ) < 0; }
-    inline bool         operator<                   ( const buffer& b, const std::vector<char>& v) { return b.compare( v.data(),              v.size()                    ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const buffer& b2          ) { return b.compare( b2.data(),               b2.size()                   ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const char*   s           ) { return b.compare( s,                       strlen(s)                   ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const char    c           ) { return b.compare( &c,                      sizeof(char)                ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const wchar_t*s           ) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const wchar_t c           ) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const std::string&  s     ) { return b.compare( s.c_str(),               s.size()                    ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const std::vector<char>& v) { return b.compare( v.data(),                v.size()                    ) < 0; }
+    inline bool         operator<                   ( const buffer& b, const std::string_view s  ) { return b.compare( s.data(),                s.size()                    ) < 0; }
                                                                                                                
-    inline bool         operator<                   ( const char*   s           , const buffer& b) { return b.compare( s,                     strlen(s)                   ) >= 0; }
-    inline bool         operator<                   ( const char    c           , const buffer& b) { return b.compare( &c,                    sizeof(char)                ) >= 0; }
-    inline bool         operator<                   ( const wchar_t*s           , const buffer& b) { return b.compare( (const char *)s,       sizeof(wchar_t) * wcslen(s) ) >= 0; }
-    inline bool         operator<                   ( const wchar_t c           , const buffer& b) { return b.compare( (const char *)&c,      sizeof(wchar_t)             ) >= 0; }
-    inline bool         operator<                   ( const std::string&  s     , const buffer& b) { return b.compare( s.c_str(),             s.size()                    ) >= 0; }
-    inline bool         operator<                   ( const std::wstring& s     , const buffer& b) { return b.compare( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ) >= 0; }
-    inline bool         operator<                   ( const std::vector<char>& v, const buffer& b) { return b.compare( v.data(),              v.size()                    ) >= 0; }
+    inline bool         operator<                   ( const char*   s           , const buffer& b) { return b.compare( s,                       strlen(s)                   ) >= 0; }
+    inline bool         operator<                   ( const char    c           , const buffer& b) { return b.compare( &c,                      sizeof(char)                ) >= 0; }
+    inline bool         operator<                   ( const wchar_t*s           , const buffer& b) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) >= 0; }
+    inline bool         operator<                   ( const wchar_t c           , const buffer& b) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) >= 0; }
+    inline bool         operator<                   ( const std::string&  s     , const buffer& b) { return b.compare( s.c_str(),               s.size()                    ) >= 0; }
+    inline bool         operator<                   ( const std::wstring& s     , const buffer& b) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) >= 0; }
+    inline bool         operator<                   ( const std::vector<char>& v, const buffer& b) { return b.compare( v.data(),                v.size()                    ) >= 0; }
+    inline bool         operator<                   ( const std::string_view s  , const buffer& b) { return b.compare( s.data(),                s.size()                    ) >= 0; }
 
     // <= 
-    inline bool         operator<=                  ( const buffer& b, const buffer& b2          ) { return b.compare( b2.data(),             b2.size()                   ) <= 0; }
-    inline bool         operator<=                  ( const buffer& b, const char*   s           ) { return b.compare( s,                     strlen(s)                   ) <= 0; }
-    inline bool         operator<=                  ( const buffer& b, const char    c           ) { return b.compare( &c,                    sizeof(char)                ) <= 0; }
-    inline bool         operator<=                  ( const buffer& b, const wchar_t*s           ) { return b.compare( (const char *)s,       sizeof(wchar_t) * wcslen(s) ) <= 0; }
-    inline bool         operator<=                  ( const buffer& b, const wchar_t c           ) { return b.compare( (const char *)&c,      sizeof(wchar_t)             ) <= 0; }
-    inline bool         operator<=                  ( const buffer& b, const std::string&  s     ) { return b.compare( s.c_str(),             s.size()                    ) <= 0; }
-    inline bool         operator<=                  ( const buffer& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ) <= 0; }
-    inline bool         operator<=                  ( const buffer& b, const std::vector<char>& v) { return b.compare( v.data(),              v.size()                    ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const buffer& b2          ) { return b.compare( b2.data(),               b2.size()                   ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const char*   s           ) { return b.compare( s,                       strlen(s)                   ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const char    c           ) { return b.compare( &c,                      sizeof(char)                ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const wchar_t*s           ) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const wchar_t c           ) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const std::string&  s     ) { return b.compare( s.c_str(),               s.size()                    ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const std::vector<char>& v) { return b.compare( v.data(),                v.size()                    ) <= 0; }
+    inline bool         operator<=                  ( const buffer& b, const std::string_view s  ) { return b.compare( s.data(),                s.size()                    ) <= 0; }
                                                                           
-    inline bool         operator<=                  ( const char*   s           , const buffer& b) { return b.compare( s,                     strlen(s)                   ) > 0; }
-    inline bool         operator<=                  ( const char    c           , const buffer& b) { return b.compare( &c,                    sizeof(char)                ) > 0; }
-    inline bool         operator<=                  ( const wchar_t*s           , const buffer& b) { return b.compare( (const char *)s,       sizeof(wchar_t) * wcslen(s) ) > 0; }
-    inline bool         operator<=                  ( const wchar_t c           , const buffer& b) { return b.compare( (const char *)&c,      sizeof(wchar_t)             ) > 0; }
-    inline bool         operator<=                  ( const std::string&  s     , const buffer& b) { return b.compare( s.c_str(),             s.size()                    ) > 0; }
-    inline bool         operator<=                  ( const std::wstring& s     , const buffer& b) { return b.compare( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ) > 0; }
-    inline bool         operator<=                  ( const std::vector<char>& v, const buffer& b) { return b.compare( v.data(),              v.size()                    ) > 0; }
+    inline bool         operator<=                  ( const char*   s           , const buffer& b) { return b.compare( s,                       strlen(s)                   ) > 0; }
+    inline bool         operator<=                  ( const char    c           , const buffer& b) { return b.compare( &c,                      sizeof(char)                ) > 0; }
+    inline bool         operator<=                  ( const wchar_t*s           , const buffer& b) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) > 0; }
+    inline bool         operator<=                  ( const wchar_t c           , const buffer& b) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) > 0; }
+    inline bool         operator<=                  ( const std::string&  s     , const buffer& b) { return b.compare( s.c_str(),               s.size()                    ) > 0; }
+    inline bool         operator<=                  ( const std::wstring& s     , const buffer& b) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) > 0; }
+    inline bool         operator<=                  ( const std::vector<char>& v, const buffer& b) { return b.compare( v.data(),                v.size()                    ) > 0; }
+    inline bool         operator<=                  ( const std::string_view s  , const buffer& b) { return b.compare( s.data(),                s.size()                    ) > 0; }
 
 
     // >
-    inline bool         operator>                   ( const buffer& b, const buffer& b2          ) { return b.compare( b2.data(),             b2.size()                   ) > 0; }
-    inline bool         operator>                   ( const buffer& b, const char*   s           ) { return b.compare( s,                     strlen(s)                   ) > 0; }
-    inline bool         operator>                   ( const buffer& b, const char    c           ) { return b.compare( &c,                    sizeof(char)                ) > 0; }
-    inline bool         operator>                   ( const buffer& b, const wchar_t*s           ) { return b.compare( (const char *)s,       sizeof(wchar_t) * wcslen(s) ) > 0; }
-    inline bool         operator>                   ( const buffer& b, const wchar_t c           ) { return b.compare( (const char *)&c,      sizeof(wchar_t)             ) > 0; }
-    inline bool         operator>                   ( const buffer& b, const std::string&  s     ) { return b.compare( s.c_str(),             s.size()                    ) > 0; }
-    inline bool         operator>                   ( const buffer& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ) > 0; }
-    inline bool         operator>                   ( const buffer& b, const std::vector<char>& v) { return b.compare( v.data(),              v.size()                    ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const buffer& b2          ) { return b.compare( b2.data(),               b2.size()                   ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const char*   s           ) { return b.compare( s,                       strlen(s)                   ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const char    c           ) { return b.compare( &c,                      sizeof(char)                ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const wchar_t*s           ) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const wchar_t c           ) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const std::string&  s     ) { return b.compare( s.c_str(),               s.size()                    ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const std::vector<char>& v) { return b.compare( v.data(),                v.size()                    ) > 0; }
+    inline bool         operator>                   ( const buffer& b, const std::string_view s  ) { return b.compare( s.data(),                s.size()                    ) > 0; }
                                                                                                               
-    inline bool         operator>                   ( const char*   s           , const buffer& b) { return b.compare( s,                     strlen(s)                   ) <= 0; }
-    inline bool         operator>                   ( const char    c           , const buffer& b) { return b.compare( &c,                    sizeof(char)                ) <= 0; }
-    inline bool         operator>                   ( const wchar_t*s           , const buffer& b) { return b.compare( (const char *)s,       sizeof(wchar_t) * wcslen(s) ) <= 0; }
-    inline bool         operator>                   ( const wchar_t c           , const buffer& b) { return b.compare( (const char *)&c,      sizeof(wchar_t)             ) <= 0; }
-    inline bool         operator>                   ( const std::string&  s     , const buffer& b) { return b.compare( s.c_str(),             s.size()                    ) <= 0; }
-    inline bool         operator>                   ( const std::wstring& s     , const buffer& b) { return b.compare( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ) <= 0; }
-    inline bool         operator>                   ( const std::vector<char>& v, const buffer& b) { return b.compare( v.data(),              v.size()                    ) <= 0; }
+    inline bool         operator>                   ( const char*   s           , const buffer& b) { return b.compare( s,                       strlen(s)                   ) <= 0; }
+    inline bool         operator>                   ( const char    c           , const buffer& b) { return b.compare( &c,                      sizeof(char)                ) <= 0; }
+    inline bool         operator>                   ( const wchar_t*s           , const buffer& b) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) <= 0; }
+    inline bool         operator>                   ( const wchar_t c           , const buffer& b) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) <= 0; }
+    inline bool         operator>                   ( const std::string&  s     , const buffer& b) { return b.compare( s.c_str(),               s.size()                    ) <= 0; }
+    inline bool         operator>                   ( const std::wstring& s     , const buffer& b) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) <= 0; }
+    inline bool         operator>                   ( const std::vector<char>& v, const buffer& b) { return b.compare( v.data(),                v.size()                    ) <= 0; }
+    inline bool         operator>                   ( const std::string_view s  , const buffer& b) { return b.compare( s.data(),                s.size()                    ) <= 0; }
 
     // >= 
-    inline bool         operator>=                  ( const buffer& b, const buffer& b2          ) { return b.compare( b2.data(),             b2.size()                   ) >= 0; }
-    inline bool         operator>=                  ( const buffer& b, const char*   s           ) { return b.compare( s,                     strlen(s)                   ) >= 0; }
-    inline bool         operator>=                  ( const buffer& b, const char    c           ) { return b.compare( &c,                    sizeof(char)                ) >= 0; }
-    inline bool         operator>=                  ( const buffer& b, const wchar_t*s           ) { return b.compare( (const char *)s,       sizeof(wchar_t) * wcslen(s) ) >= 0; }
-    inline bool         operator>=                  ( const buffer& b, const wchar_t c           ) { return b.compare( (const char *)&c,      sizeof(wchar_t)             ) >= 0; }
-    inline bool         operator>=                  ( const buffer& b, const std::string&  s     ) { return b.compare( s.c_str(),             s.size()                    ) >= 0; }
-    inline bool         operator>=                  ( const buffer& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ) >= 0; }
-    inline bool         operator>=                  ( const buffer& b, const std::vector<char>& v) { return b.compare( v.data(),              v.size()                    ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const buffer& b2          ) { return b.compare( b2.data(),               b2.size()                   ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const char*   s           ) { return b.compare( s,                       strlen(s)                   ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const char    c           ) { return b.compare( &c,                      sizeof(char)                ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const wchar_t*s           ) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const wchar_t c           ) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const std::string&  s     ) { return b.compare( s.c_str(),               s.size()                    ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const std::vector<char>& v) { return b.compare( v.data(),                v.size()                    ) >= 0; }
+    inline bool         operator>=                  ( const buffer& b, const std::string_view s  ) { return b.compare( s.data(),                s.size()                    ) >= 0; }
                                                                         
-    inline bool         operator>=                  ( const char*   s           , const buffer& b) { return b.compare( s,                     strlen(s)                   ) < 0; }
-    inline bool         operator>=                  ( const char    c           , const buffer& b) { return b.compare( &c,                    sizeof(char)                ) < 0; }
-    inline bool         operator>=                  ( const wchar_t*s           , const buffer& b) { return b.compare( (const char *)s,       sizeof(wchar_t) * wcslen(s) ) < 0; }
-    inline bool         operator>=                  ( const wchar_t c           , const buffer& b) { return b.compare( (const char *)&c,      sizeof(wchar_t)             ) < 0; }
-    inline bool         operator>=                  ( const std::string&  s     , const buffer& b) { return b.compare( s.c_str(),             s.size()                    ) < 0; }
-    inline bool         operator>=                  ( const std::wstring& s     , const buffer& b) { return b.compare( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ) < 0; }
-    inline bool         operator>=                  ( const std::vector<char>& v, const buffer& b) { return b.compare( v.data(),              v.size()                    ) < 0; }
+    inline bool         operator>=                  ( const char*   s           , const buffer& b) { return b.compare( s,                       strlen(s)                   ) < 0; }
+    inline bool         operator>=                  ( const char    c           , const buffer& b) { return b.compare( &c,                      sizeof(char)                ) < 0; }
+    inline bool         operator>=                  ( const wchar_t*s           , const buffer& b) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) < 0; }
+    inline bool         operator>=                  ( const wchar_t c           , const buffer& b) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) < 0; }
+    inline bool         operator>=                  ( const std::string&  s     , const buffer& b) { return b.compare( s.c_str(),               s.size()                    ) < 0; }
+    inline bool         operator>=                  ( const std::wstring& s     , const buffer& b) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) < 0; }
+    inline bool         operator>=                  ( const std::vector<char>& v, const buffer& b) { return b.compare( v.data(),                v.size()                    ) < 0; }
+    inline bool         operator>=                  ( const std::string_view s  , const buffer& b) { return b.compare( s.data(),                s.size()                    ) < 0; }
 
 
 }

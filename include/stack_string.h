@@ -30,6 +30,10 @@ namespace small
         stack_string                                ( const std::string& s )           : stack_string() { operator=( s ); }
         // from std::wstring
         stack_string                                ( const std::wstring& s )          : stack_string() { operator=( s ); }
+        // from std::vector<char>
+        stack_string                                ( const std::vector<char>& v )     : stack_string() { operator=( v ); }
+        // from std::string_view
+        stack_string                                ( const std::string_view s )       : stack_string() { operator=( s ); }
 
         // destructor
         ~stack_string                               () { }
@@ -51,8 +55,8 @@ namespace small
 
         // data
         inline const char* c_str                    () const { return std_string_ ? std_string_.get()->c_str() : stack_string_.data(); }
-        inline const char* data                     () const { return std_string_ ? std_string_.get()->data() : stack_string_.dta(); }
-        inline char*    data                        ()       { return std_string_ ? std_string_.get()->data() : stack_string_.data(); }
+        inline const char* data                     () const { return std_string_ ? std_string_.get()->data()  : stack_string_.data(); }
+        inline char*    data                        ()       { return std_string_ ? std_string_.get()->data()  : stack_string_.data(); }
 
         // as c_string
         inline std::string c_string                 () const { return std_string_ ? *std_string_.get() : std::string( stack_string_, stack_string_size_ ); }
@@ -70,6 +74,8 @@ namespace small
         inline void     append                      ( const wchar_t  c          ) { set( &c,                    sizeof(c) / sizeof(wchar_t), size()/*startfrom*/ ); }
         inline void     append                      ( const std::string& s      ) { set( s.c_str(),             s.size(),       size()/*startfrom*/ ); }
         inline void     append                      ( const std::wstring& s     ) { set( s.c_str(),             s.size(),       size()/*startfrom*/ ); }
+        inline void     append                      ( const std::vector<char>& v) { set( v.data(),              v.size(),       size()/*startfrom*/ ); }
+        inline void     append                      ( const std::string_view s  ) { set( s.data(),              s.size(),       size()/*startfrom*/ ); }
 
         // assign
         inline void     assign                      ( const stack_string& s     ) { if ( this != &s ) { set( s.data(), s.size(), 0/*startfrom*/ ); } }
@@ -81,6 +87,8 @@ namespace small
         inline void     assign                      ( const wchar_t  c          ) { set( &c,                    sizeof(c)/sizeof(wchar_t),      0/*startfrom*/ ); }
         inline void     assign                      ( const std::string& s      ) { set( s.c_str(),             s.size(),       0/*startfrom*/ ); }
         inline void     assign                      ( const std::wstring& s     ) { set( s.c_str(),             s.size(),       0/*startfrom*/ ); }
+        inline void     assign                      ( const std::vector<char>& v) { set( v.data(),              v.size(),       0/*startfrom*/ ); }
+        inline void     assign                      ( const std::string_view s  ) { set( s.data(),              s.size(),       0/*startfrom*/ ); }
 
         // set
         inline void     set                         ( const char* s,    const size_t& s_length, const size_t& start_from = 0 ) { set_impl( s, s_length, start_from ); }
@@ -96,7 +104,7 @@ namespace small
         
         // compare
         inline bool     is_equal                    ( const char *s, const size_t& s_length ) const { return size() == s_length && compare( s, s_length ) == 0; }
-        inline int      compare                     ( const char *s, const size_t& s_length ) const { return strcmp( data(), s/*, size() < s_length ? size()+1 : s_length+1*/ ); }
+        inline int      compare                     ( const char *s, const size_t& s_length ) const { return strncmp( data(), s, size() < s_length ? size()+1 : s_length+1 ); }
 
         // swap
         inline void     swap                        ( stack_string& o ) { swap_impl( o ); }
@@ -145,6 +153,8 @@ namespace small
         inline stack_string& operator=              ( const wchar_t c           ) noexcept { set( &c,                       sizeof(c) / sizeof(wchar_t) ); return *this; }
         inline stack_string& operator=              ( const std::string&  s     ) noexcept { set( s.c_str(),                s.size()        ); return *this; }
         inline stack_string& operator=              ( const std::wstring& s     ) noexcept { set( s.c_str(),                s.size()        ); return *this; }
+        inline stack_string& operator=              ( const std::vector<char>& v) noexcept { set( v.data(),                 v.size()        ); return *this; }
+        inline stack_string& operator=              ( const std::string_view  s ) noexcept { set( s.data(),                 s.size()        ); return *this; }
         
         // +=
         inline stack_string& operator+=             ( const stack_string& s     ) noexcept { append( s.data(),              s.size()        ); return *this; }
@@ -154,6 +164,8 @@ namespace small
         inline stack_string& operator+=             ( const wchar_t c           ) noexcept { append( &c,                    1               ); return *this; }
         inline stack_string& operator+=             ( const std::string&  s     ) noexcept { append( s.c_str(),             s.size()        ); return *this; }
         inline stack_string& operator+=             ( const std::wstring& s     ) noexcept { append( s.c_str(),             s.size()        ); return *this; }
+        inline stack_string& operator+=             ( const std::vector<char>& v) noexcept { append( v.data(),              v.size()        ); return *this; }
+        inline stack_string& operator+=             ( const std::string_view s  ) noexcept { append( s.data(),              s.size()        ); return *this; }
         
 
         // []
@@ -280,4 +292,273 @@ namespace small
         // for larger string
         std::unique_ptr<std::string> std_string_;
     };
+
+
+
+
+    // other operators
+
+    // +
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const stack_string<S>& b2 ) { stack_string<S> br = b; br.append( b2.data(),             b2.size()                   ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( stack_string<S>&& b,      const stack_string<S>& b2 ) { stack_string<S> br( std::forward<stack_string<S>>( b ) ); br.append( b2.data(), b2.size() ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const char*   s           ) { stack_string<S> br = b; br.append( s,                     strlen(s)                   ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const char    c           ) { stack_string<S> br = b; br.append( &c,                    sizeof(char)                ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const wchar_t*s           ) { stack_string<S> br = b; br.append( (const char *)s,       sizeof(wchar_t) * wcslen(s) ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const wchar_t c           ) { stack_string<S> br = b; br.append( (const char *)&c,      sizeof(wchar_t)             ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const std::string&  s     ) { stack_string<S> br = b; br.append( s.c_str(),             s.size()                    ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const std::wstring& s     ) { stack_string<S> br = b; br.append( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const std::vector<char>& v) { stack_string<S> br = b; br.append( v.data(),              v.size()                    ); return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const stack_string<S>& b, const std::string_view s  ) { stack_string<S> br = b; br.append( s.data(),              s.size()                    ); return br; }
+
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const char*   s           , const stack_string<S>& b) { stack_string<S> br ( b.get_chunk_size() ); br.append( s,                     strlen(s)                   ); br += b; return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const char    c           , const stack_string<S>& b) { stack_string<S> br ( b.get_chunk_size() ); br.append( &c,                    sizeof(char)                ); br += b; return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const wchar_t*s           , const stack_string<S>& b) { stack_string<S> br ( b.get_chunk_size() ); br.append( (const char *)s,       sizeof(wchar_t) * wcslen(s) ); br += b; return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const wchar_t c           , const stack_string<S>& b) { stack_string<S> br ( b.get_chunk_size() ); br.append( (const char *)&c,      sizeof(wchar_t)             ); br += b; return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const std::string&  s     , const stack_string<S>& b) { stack_string<S> br ( b.get_chunk_size() ); br.append( s.c_str(),             s.size()                    ); br += b; return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const std::wstring& s     , const stack_string<S>& b) { stack_string<S> br ( b.get_chunk_size() ); br.append( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); br += b; return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const std::vector<char>& v, const stack_string<S>& b) { stack_string<S> br ( b.get_chunk_size() ); br.append( v.data(),              v.size()                    ); br += b; return br; }
+    template<std::size_t S = 256>
+    inline stack_string<S> operator+                ( const std::string_view s  , const stack_string<S>& b) { stack_string<S> br ( b.get_chunk_size() ); br.append( s.data(),              s.size()                    ); br += b; return br; }
+
+    // ==
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const stack_string<S>& b2 ) { return b.is_equal( b2.data(),              b2.size()                   ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const char*   s           ) { return b.is_equal( s,                      strlen(s)                   ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const char    c           ) { return b.is_equal( &c,                     sizeof(char)                ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const wchar_t*s           ) { return b.is_equal( (const char *)s,        sizeof(wchar_t) * wcslen(s) ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const wchar_t c           ) { return b.is_equal( (const char *)&c,       sizeof(wchar_t)             ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const std::string&  s     ) { return b.is_equal( s.c_str(),              s.size()                    ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const std::wstring& s     ) { return b.is_equal( (const char*)s.c_str(), sizeof(wchar_t) * s.size()  ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const std::vector<char>& v) { return b.is_equal( v.data(),               v.size()                    ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const stack_string<S>& b, const std::string_view s  ) { return b.is_equal( s.data(),               s.size()                    ); }
+                                                                                                              
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const char*   s           , const stack_string<S>& b) { return b.is_equal( s,                      strlen(s)                   ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const char    c           , const stack_string<S>& b) { return b.is_equal( &c,                     sizeof(char)                ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const wchar_t*s           , const stack_string<S>& b) { return b.is_equal( (const char *)s,        sizeof(wchar_t) * wcslen(s) ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const wchar_t c           , const stack_string<S>& b) { return b.is_equal( (const char *)&c,       sizeof(wchar_t)             ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const std::string&  s     , const stack_string<S>& b) { return b.is_equal( s.c_str(),              s.size()                    ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const std::wstring& s     , const stack_string<S>& b) { return b.is_equal( (const char*)s.c_str(), sizeof(wchar_t) * s.size()  ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const std::vector<char>& v, const stack_string<S>& b) { return b.is_equal( v.data(),               v.size()                    ); }
+    template<std::size_t S = 256>
+    inline bool         operator==                  ( const std::string_view s  , const stack_string<S>& b) { return b.is_equal( s.data(),               s.size()                    ); }
+
+    // !=
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const stack_string<S>& b2 ) { return !b.is_equal( b2.data(),             b2.size()                   ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const char*   s           ) { return !b.is_equal( s,                     strlen(s)                   ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const char    c           ) { return !b.is_equal( &c,                    sizeof(char)                ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const wchar_t*s           ) { return !b.is_equal( (const char *)s,       sizeof(wchar_t) * wcslen(s) ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const wchar_t c           ) { return !b.is_equal( (const char *)&c,      sizeof(wchar_t)             ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const std::string&  s     ) { return !b.is_equal( s.c_str(),             s.size()                    ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const std::wstring& s     ) { return !b.is_equal( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const std::vector<char>& v) { return !b.is_equal( v.data(),              v.size()                    ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const stack_string<S>& b, const std::string_view s  ) { return !b.is_equal( s.data(),              s.size()                    ); }
+                                                                                                     
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const char*   s           , const stack_string<S>& b) { return !b.is_equal( s,                     strlen(s)                   ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const char    c           , const stack_string<S>& b) { return !b.is_equal( &c,                    sizeof(char)                ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const wchar_t*s           , const stack_string<S>& b) { return !b.is_equal( (const char *)s,       sizeof(wchar_t) * wcslen(s) ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const wchar_t c           , const stack_string<S>& b) { return !b.is_equal( (const char *)&c,      sizeof(wchar_t)             ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const std::string&  s     , const stack_string<S>& b) { return !b.is_equal( s.c_str(),             s.size()                    ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const std::wstring& s     , const stack_string<S>& b) { return !b.is_equal( (const char*)s.c_str(),sizeof(wchar_t) * s.size()  ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const std::vector<char>& v, const stack_string<S>& b) { return !b.is_equal( v.data(),              v.size()                    ); }
+    template<std::size_t S = 256>
+    inline bool         operator!=                  ( const std::string_view s  , const stack_string<S>& b) { return !b.is_equal( s.data(),              s.size()                    ); }
+
+
+     // < 
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const stack_string<S>& b2 ) { return b.compare( b2.data(),               b2.size()                   ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const char*   s           ) { return b.compare( s,                       strlen(s)                   ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const char    c           ) { return b.compare( &c,                      sizeof(char)                ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const wchar_t*s           ) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const wchar_t c           ) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const std::string&  s     ) { return b.compare( s.c_str(),               s.size()                    ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const std::vector<char>& v) { return b.compare( v.data(),                v.size()                    ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const stack_string<S>& b, const std::string_view s  ) { return b.compare( s.data(),                s.size()                    ) < 0; }
+                                                                                                               
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const char*   s           , const stack_string<S>& b) { return b.compare( s,                       strlen(s)                   ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const char    c           , const stack_string<S>& b) { return b.compare( &c,                      sizeof(char)                ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const wchar_t*s           , const stack_string<S>& b) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const wchar_t c           , const stack_string<S>& b) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const std::string&  s     , const stack_string<S>& b) { return b.compare( s.c_str(),               s.size()                    ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const std::wstring& s     , const stack_string<S>& b) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const std::vector<char>& v, const stack_string<S>& b) { return b.compare( v.data(),                v.size()                    ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<                   ( const std::string_view s  , const stack_string<S>& b) { return b.compare( s.data(),                s.size()                    ) >= 0; }
+
+    // <= 
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const stack_string<S>& b2 ) { return b.compare( b2.data(),               b2.size()                   ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const char*   s           ) { return b.compare( s,                       strlen(s)                   ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const char    c           ) { return b.compare( &c,                      sizeof(char)                ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const wchar_t*s           ) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const wchar_t c           ) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const std::string&  s     ) { return b.compare( s.c_str(),               s.size()                    ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const std::vector<char>& v) { return b.compare( v.data(),                v.size()                    ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const stack_string<S>& b, const std::string_view s  ) { return b.compare( s.data(),                s.size()                    ) <= 0; }
+                                                                          
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const char*   s           , const stack_string<S>& b) { return b.compare( s,                       strlen(s)                   ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const char    c           , const stack_string<S>& b) { return b.compare( &c,                      sizeof(char)                ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const wchar_t*s           , const stack_string<S>& b) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const wchar_t c           , const stack_string<S>& b) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const std::string&  s     , const stack_string<S>& b) { return b.compare( s.c_str(),               s.size()                    ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const std::wstring& s     , const stack_string<S>& b) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const std::vector<char>& v, const stack_string<S>& b) { return b.compare( v.data(),                v.size()                    ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator<=                  ( const std::string_view s  , const stack_string<S>& b) { return b.compare( s.data(),                s.size()                    ) > 0; }
+
+
+    // >
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const stack_string<S>& b2 ) { return b.compare( b2.data(),               b2.size()                   ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const char*   s           ) { return b.compare( s,                       strlen(s)                   ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const char    c           ) { return b.compare( &c,                      sizeof(char)                ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const wchar_t*s           ) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const wchar_t c           ) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const std::string&  s     ) { return b.compare( s.c_str(),               s.size()                    ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const std::vector<char>& v) { return b.compare( v.data(),                v.size()                    ) > 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const stack_string<S>& b, const std::string_view s  ) { return b.compare( s.data(),                s.size()                    ) > 0; }
+                                                                                                              
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const char*   s           , const stack_string<S>& b) { return b.compare( s,                       strlen(s)                   ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const char    c           , const stack_string<S>& b) { return b.compare( &c,                      sizeof(char)                ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const wchar_t*s           , const stack_string<S>& b) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const wchar_t c           , const stack_string<S>& b) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const std::string&  s     , const stack_string<S>& b) { return b.compare( s.c_str(),               s.size()                    ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const std::wstring& s     , const stack_string<S>& b) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const std::vector<char>& v, const stack_string<S>& b) { return b.compare( v.data(),                v.size()                    ) <= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>                   ( const std::string_view s  , const stack_string<S>& b) { return b.compare( s.data(),                s.size()                    ) <= 0; }
+
+    // >= 
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const stack_string<S>& b2 ) { return b.compare( b2.data(),               b2.size()                   ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const char*   s           ) { return b.compare( s,                       strlen(s)                   ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const char    c           ) { return b.compare( &c,                      sizeof(char)                ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const wchar_t*s           ) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const wchar_t c           ) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const std::string&  s     ) { return b.compare( s.c_str(),               s.size()                    ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const std::wstring& s     ) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const std::vector<char>& v) { return b.compare( v.data(),                v.size()                    ) >= 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const stack_string<S>& b, const std::string_view s  ) { return b.compare( s.data(),                s.size()                    ) >= 0; }
+                                                                        
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const char*   s           , const stack_string<S>& b) { return b.compare( s,                       strlen(s)                   ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const char    c           , const stack_string<S>& b) { return b.compare( &c,                      sizeof(char)                ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const wchar_t*s           , const stack_string<S>& b) { return b.compare( (const char *)s,         sizeof(wchar_t) * wcslen(s) ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const wchar_t c           , const stack_string<S>& b) { return b.compare( (const char *)&c,        sizeof(wchar_t)             ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const std::string&  s     , const stack_string<S>& b) { return b.compare( s.c_str(),               s.size()                    ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const std::wstring& s     , const stack_string<S>& b) { return b.compare( (const char*)s.c_str(),  sizeof(wchar_t) * s.size()  ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const std::vector<char>& v, const stack_string<S>& b) { return b.compare( v.data(),                v.size()                    ) < 0; }
+    template<std::size_t S = 256>
+    inline bool         operator>=                  ( const std::string_view s  , const stack_string<S>& b) { return b.compare( s.data(),                s.size()                    ) < 0; }
+    
 }
