@@ -3,13 +3,16 @@ Small project
 
 Contains usefull everyday features to be used like:
 
-* spinlock (or critical_section)
 * event
 * event_queue
+* spinlock (or critical_section)
 * worker_thread
 
 #
 * buffer
+* stack_string
+
+#
 * base64
 * quick_hash
 * util functions
@@ -20,24 +23,6 @@ For windows if you include windows.h you must undefine small because there is a 
 ```
 #include <windows.h>
 #undef small
-```
-
-### spinlock (or critical_section)
-Spinlock is just like a mutex but it uses atomic lockless to do locking (based on std::atomic_flag).
-
-The following functions are available
-```lock, unlock, try_lock```
-
-Use it like this
-```
-small::spinlock lock; // small::critical_section lock;
-...
-{
-    std::unique_lock<small::spinlock> mlock( lock );
-    
-    // do your work
-    ...
-}
 ```
 
 
@@ -152,6 +137,28 @@ q.signal_exit();
 ```
 
 
+
+### spinlock (or critical_section)
+Spinlock is just like a mutex but it uses atomic lockless to do locking (based on std::atomic_flag).
+
+The following functions are available
+```lock, unlock, try_lock```
+
+Use it like this
+```
+small::spinlock lock; // small::critical_section lock;
+...
+{
+    std::unique_lock<small::spinlock> mlock( lock );
+    
+    // do your work
+    ...
+}
+```
+
+
+
+
 #
 
 ### worker_thread
@@ -221,22 +228,23 @@ workers.signal_exit();
 
 
 
-## Utilities
+## Classes
+
 
 ### buffer
 Buffer class for manipulating buffers (not strings)
 
-The following function is available
-```set, append```
+The following functions are available
+```set, append, ...```
 
-can be used like this
+and can be used like this
 
 ```
 small::buffer b;
 b.clear();
 
-b.set( "abc", 3 );
-b.set( "b", 1, 2 );
+b.set( "anc", 3 );
+b.set( "b", 1/*length*/, 2/*start from*/ );
     
 char* e = b.extract(); // extract "anb"
 free( e );
@@ -260,6 +268,24 @@ b.clear();
 small::frombase64( s64.c_str(), (int)s64.size(), &b );
 b = small::frombase64_b( s64 );
 ```
+
+
+
+
+### stack_string
+A string class that uses the stack to allocate the string (it defines an array)
+Ofcourse if the string is longer than the stack size a normal std::string is used.
+
+The functions from string are also available, and should have the same usage.
+Beware that move semantics must copy the part that is allocated on stack.
+
+```
+small::stack_string<256/*on stack*/> s;
+```
+
+
+
+## Utilities
 
 ### base64
 Functions to encode or decode base64
