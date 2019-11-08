@@ -55,39 +55,39 @@ namespace small
 
 
         // assign
-        inline void     assign                      ( const base_buffer& b      )   { if ( this != &b ) { set( b.data(), b.size(), 0/*startfrom*/ ); } }
+        inline void     assign                      ( const base_buffer& b      )   { if ( this != &b ) { set( 0/*startfrom*/, b.data(), b.size() ); } }
         
-        inline void     assign                      ( const char  c             )   { set( &c,          1,          0/*startfrom*/ ); }
-        inline void     assign                      ( const char* s             )   { set( s,           strlen( s ),0/*startfrom*/ ); }
-        inline void     assign                      ( const char* s, size_t len )   { set( s,           len,        0/*startfrom*/ ); }
-        inline void     assign                      ( const std::string& s      )   { set( s.c_str(),   s.size(),   0/*startfrom*/ ); }
-        inline void     assign                      ( const std::string_view s  )   { set( s.data(),    s.size(),   0/*startfrom*/ ); }
-        inline void     assign                      ( const std::vector<char>& v)   { set( v.data(),    v.size(),   0/*startfrom*/ ); }
+        inline void     assign                      ( const char  c             )   { set( 0/*startfrom*/, &c,          1           ); }
+        inline void     assign                      ( const char* s             )   { set( 0/*startfrom*/, s,           strlen( s ) ); }
+        inline void     assign                      ( const char* s, size_t len )   { set( 0/*startfrom*/, s,           len         ); }
+        inline void     assign                      ( const std::string& s      )   { set( 0/*startfrom*/, s.c_str(),   s.size()    ); }
+        inline void     assign                      ( const std::string_view s  )   { set( 0/*startfrom*/, s.data(),    s.size()    ); }
+        inline void     assign                      ( const std::vector<char>& v)   { set( 0/*startfrom*/, v.data(),    v.size()    ); }
 
-        inline void     assign                      ( const wchar_t  c          )   { set( &c,          1,          0/*startfrom*/ ); }
-        inline void     assign                      ( const wchar_t* s          )   { set( s,           wcslen( s ),0/*startfrom*/ ); }
-        inline void     assign                      ( const wchar_t* s, size_t len ){ set( s,           len,        0/*startfrom*/ ); }
-        inline void     assign                      ( const std::wstring& s     )   { set( s.c_str(),   s.size(),   0/*startfrom*/ ); }
-        inline void     assign                      ( const std::wstring_view s )   { set( s.data(),    s.size(),   0/*startfrom*/ ); }
-        inline void     assign                      ( const std::vector<wchar_t>& v){ set( v.data(),    v.size(),   0/*startfrom*/ ); }
+        inline void     assign                      ( const wchar_t  c          )   { set( 0/*startfrom*/, &c,          1           ); }
+        inline void     assign                      ( const wchar_t* s          )   { set( 0/*startfrom*/, s,           wcslen( s ) ); }
+        inline void     assign                      ( const wchar_t* s, size_t len ){ set( 0/*startfrom*/, s,           len         ); }
+        inline void     assign                      ( const std::wstring& s     )   { set( 0/*startfrom*/, s.c_str(),   s.size()    ); }
+        inline void     assign                      ( const std::wstring_view s )   { set( 0/*startfrom*/, s.data(),    s.size()    ); }
+        inline void     assign                      ( const std::vector<wchar_t>& v){ set( 0/*startfrom*/, v.data(),    v.size()    ); }
 
 
         // append
-        inline void     append                      ( const base_buffer& b      )   { set( b.data(),    b.size(),   size()/*startfrom*/ ); }
-        
-        inline void     append                      ( const char  c             )   { set( &c,          1,          size()/*startfrom*/ ); }
-        inline void     append                      ( const char* s             )   { set( s,           strlen( s ),size()/*startfrom*/ ); }
-        inline void     append                      ( const char* s, size_t len )   { set( s,           len,        size()/*startfrom*/ ); }
-        inline void     append                      ( const std::string& s      )   { set( s.c_str(),   s.size(),   size()/*startfrom*/ ); }
-        inline void     append                      ( const std::string_view s  )   { set( s.data(),    s.size(),   size()/*startfrom*/ ); }
-        inline void     append                      ( const std::vector<char>& v)   { set( v.data(),    v.size(),   size()/*startfrom*/ ); }
-
-        inline void     append                      ( const wchar_t  c          )   { set( &c,          1,          size()/*startfrom*/ ); }
-        inline void     append                      ( const wchar_t* s          )   { set( s,           wcslen(s),  size()/*startfrom*/ ); }
-        inline void     append                      ( const wchar_t* s, size_t len ){ set( s,           len,        size()/*startfrom*/ ); }
-        inline void     append                      ( const std::wstring& s     )   { set( s.c_str(),   s.size(),   size()/*startfrom*/ ); }
-        inline void     append                      ( const std::wstring_view s )   { set( s.data(),    s.size(),   size()/*startfrom*/ ); }
-        inline void     append                      ( const std::vector<wchar_t>& v){ set( v.data(),    v.size(),   size()/*startfrom*/ ); }
+        inline void     append                      ( const base_buffer& b      )   { set( size()/*startfrom*/, b.data(),   b.size()    ); }
+                                                                                                               
+        inline void     append                      ( const char  c             )   { set( size()/*startfrom*/, &c,         1           ); }
+        inline void     append                      ( const char* s             )   { set( size()/*startfrom*/, s,          strlen( s ) ); }
+        inline void     append                      ( const char* s, size_t len )   { set( size()/*startfrom*/, s,          len         ); }
+        inline void     append                      ( const std::string& s      )   { set( size()/*startfrom*/, s.c_str(),  s.size()    ); }
+        inline void     append                      ( const std::string_view s  )   { set( size()/*startfrom*/, s.data(),   s.size()    ); }
+        inline void     append                      ( const std::vector<char>& v)   { set( size()/*startfrom*/, v.data(),   v.size()    ); }
+                                                                                                              
+        inline void     append                      ( const wchar_t  c          )   { set( size()/*startfrom*/, &c,          1          ); }
+        inline void     append                      ( const wchar_t* s          )   { set( size()/*startfrom*/, s,           wcslen( s )); }
+        inline void     append                      ( const wchar_t* s, size_t len ){ set( size()/*startfrom*/, s,           len        ); }
+        inline void     append                      ( const std::wstring& s     )   { set( size()/*startfrom*/, s.c_str(),   s.size()   ); }
+        inline void     append                      ( const std::wstring_view s )   { set( size()/*startfrom*/, s.data(),    s.size()   ); }
+        inline void     append                      ( const std::vector<wchar_t>& v){ set( size()/*startfrom*/, v.data(),    v.size()   ); }
 
 
         // insert
@@ -109,39 +109,39 @@ namespace small
 
         
         // overwrite
-        inline void     overwrite                   ( size_t from, const base_buffer& b      )  { set( b.data(),    b.size(),   from ); }
-                        
-        inline void     overwrite                   ( size_t from, const char  c             )  { set( &c,          1,          from ); }
-        inline void     overwrite                   ( size_t from, const char* s             )  { set( s,           strlen( s ),from ); }
-        inline void     overwrite                   ( size_t from, const char* s, size_t len )  { set( s,           len,        from ); }
-        inline void     overwrite                   ( size_t from, const std::string& s      )  { set( s.c_str(),   s.size(),   from ); }
-        inline void     overwrite                   ( size_t from, const std::string_view s  )  { set( s.data(),    s.size(),   from ); }
-        inline void     overwrite                   ( size_t from, const std::vector<char>& v)  { set( v.data(),    v.size(),   from ); }
-                        
-        inline void     overwrite                   ( size_t from, const wchar_t  c          )  { set( &c,          1,          from ); }
-        inline void     overwrite                   ( size_t from, const wchar_t* s          )  { set( s,           wcslen( s ),from ); }
-        inline void     overwrite                   ( size_t from, const wchar_t* s, size_t len ){ set( s,          len,        from ); }
-        inline void     overwrite                   ( size_t from, const std::wstring& s     )  { set( s.c_str(),   s.size(),   from ); }
-        inline void     overwrite                   ( size_t from, const std::wstring_view s )  { set( s.data(),    s.size(),   from ); }
-        inline void     overwrite                   ( size_t from, const std::vector<wchar_t>& v){set( v.data(),    v.size(),   from ); }
+        inline void     overwrite                   ( size_t from, const base_buffer& b      )  { set( from, b.data(),  b.size()    ); }
+                                                                                                           
+        inline void     overwrite                   ( size_t from, const char  c             )  { set( from, &c,        1           ); }
+        inline void     overwrite                   ( size_t from, const char* s             )  { set( from, s,         strlen( s ) ); }
+        inline void     overwrite                   ( size_t from, const char* s, size_t len )  { set( from, s,         len         ); }
+        inline void     overwrite                   ( size_t from, const std::string& s      )  { set( from, s.c_str(), s.size()    ); }
+        inline void     overwrite                   ( size_t from, const std::string_view s  )  { set( from, s.data(),  s.size()    ); }
+        inline void     overwrite                   ( size_t from, const std::vector<char>& v)  { set( from, v.data(),  v.size()    ); }
+                                                                                                            
+        inline void     overwrite                   ( size_t from, const wchar_t  c          )  { set( from, &c,        1           ); }
+        inline void     overwrite                   ( size_t from, const wchar_t* s          )  { set( from, s,         wcslen( s ) ); }
+        inline void     overwrite                   ( size_t from, const wchar_t* s, size_t len ){set( from, s,         len         ); }
+        inline void     overwrite                   ( size_t from, const std::wstring& s     )  { set( from, s.c_str(), s.size()    ); }
+        inline void     overwrite                   ( size_t from, const std::wstring_view s )  { set( from, s.data(),  s.size()    ); }
+        inline void     overwrite                   ( size_t from, const std::vector<wchar_t>& v){set( from, v.data(),  v.size()    ); }
 
 
         // set
-        inline void     set                         ( const base_buffer& b,         size_t from = 0 ) { fn_set_( from, b.data(),    b.size()    ); }
+        inline void     set                         ( size_t from, const base_buffer& b         ) { fn_set_( from, b.data(),    b.size()    ); }
                         
-        inline void     set                         ( const char  c,                size_t from = 0 ) { fn_set_( from, &c,          1           ); }
-        inline void     set                         ( const char* s,                size_t from = 0 ) { fn_set_( from, s,           strlen( s ) ); }
-        inline void     set                         ( const char* s, size_t len,    size_t from = 0 ) { fn_set_( from, s,           len         ); }
-        inline void     set                         ( const std::string& s,         size_t from = 0 ) { fn_set_( from, s.c_str(),   s.size()    ); }
-        inline void     set                         ( const std::string_view s,     size_t from = 0 ) { fn_set_( from, s.data(),    s.size()    ); }
-        inline void     set                         ( const std::vector<char>& v,   size_t from = 0 ) { fn_set_( from, v.data(),    v.size()    ); }
+        inline void     set                         ( size_t from, const char  c                ) { fn_set_( from, &c,          1           ); }
+        inline void     set                         ( size_t from, const char* s                ) { fn_set_( from, s,           strlen( s ) ); }
+        inline void     set                         ( size_t from, const char* s, size_t len    ) { fn_set_( from, s,           len         ); }
+        inline void     set                         ( size_t from, const std::string& s         ) { fn_set_( from, s.c_str(),   s.size()    ); }
+        inline void     set                         ( size_t from, const std::string_view s     ) { fn_set_( from, s.data(),    s.size()    ); }
+        inline void     set                         ( size_t from, const std::vector<char>& v   ) { fn_set_( from, v.data(),    v.size()    ); }
                         
-        inline void     set                         ( const wchar_t  c,             size_t from = 0 ) { fn_setw_( from, &c,         1           ); }
-        inline void     set                         ( const wchar_t* s,             size_t from = 0 ) { fn_setw_( from, s,          wcslen( s ) ); }
-        inline void     set                         ( const wchar_t* s, size_t len, size_t from = 0 ) { fn_setw_( from, s,          len         ); }
-        inline void     set                         ( const std::wstring& s,        size_t from = 0 ) { fn_setw_( from, s.c_str(),  s.size()    ); }
-        inline void     set                         ( const std::wstring_view s,    size_t from = 0 ) { fn_setw_( from, s.data(),   s.size()    ); }
-        inline void     set                         ( const std::vector<wchar_t>& v,size_t from = 0 ) { fn_setw_( from, v.data(),   v.size()    ); }
+        inline void     set                         ( size_t from, const wchar_t  c             ) { fn_setw_( from, &c,         1           ); }
+        inline void     set                         ( size_t from, const wchar_t* s             ) { fn_setw_( from, s,          wcslen( s ) ); }
+        inline void     set                         ( size_t from, const wchar_t* s, size_t len ) { fn_setw_( from, s,          len         ); }
+        inline void     set                         ( size_t from, const std::wstring& s        ) { fn_setw_( from, s.c_str(),  s.size()    ); }
+        inline void     set                         ( size_t from, const std::wstring_view s    ) { fn_setw_( from, s.data(),   s.size()    ); }
+        inline void     set                         ( size_t from, const std::vector<wchar_t>& v) { fn_setw_( from, v.data(),   v.size()    ); }
 
         
         // erase
@@ -157,6 +157,7 @@ namespace small
             return (cmp != 0) ? /*different*/cmp : /*equal so far*/(size() == s_length ? 0/*true equal*/ : (size() < s_length ? -1 : 1));
         }
 
+        // TODO
         inline bool     is_equal                    ( const wchar_t *s, size_t s_length ) const { return size() == s_length && compare( s, s_length ) == 0; }
         inline int      compare                     ( const wchar_t *s, size_t s_length ) const { return memcmp( data(), s, size() < s_length ? size()+1 : s_length+1 ); }
 
@@ -167,17 +168,17 @@ namespace small
         //inline base_buffer&  operator=                   ( const base_buffer& o           ) noexcept;
         //inline base_buffer&  operator=                   ( base_buffer&&      o           ) noexcept;
         // =
-        inline base_buffer&  operator=              ( const char c              ) noexcept { set( &c,               1,          0/*from*/ ); return *this; }
-        inline base_buffer&  operator=              ( const char* s             ) noexcept { set( s,                strlen(s),  0/*from*/ ); return *this; }
-        inline base_buffer&  operator=              ( const std::string&  s     ) noexcept { set( s.c_str(),        s.size(),   0/*from*/ ); return *this; }
-        inline base_buffer&  operator=              ( const std::string_view  s ) noexcept { set( s.data(),         s.size(),   0/*from*/ ); return *this; }
-        inline base_buffer&  operator=              ( const std::vector<char>& v) noexcept { set( v.data(),         v.size(),   0/*from*/ ); return *this; }
-
-        inline base_buffer&  operator=              ( const wchar_t c           ) noexcept { set( &c,               1,          0/*from*/ ); return *this; }
-        inline base_buffer&  operator=              ( const wchar_t* s          ) noexcept { set( s,                wcslen( s ),0/*from*/ ); return *this; }
-        inline base_buffer&  operator=              ( const std::wstring& s     ) noexcept { set( s.c_str(),        s.size(),   0/*from*/ ); return *this; }
-        inline base_buffer&  operator=              ( const std::wstring_view s ) noexcept { set( s.data(),         s.size(),   0/*from*/ ); return *this; }
-        inline base_buffer&  operator=              ( const std::vector<wchar_t>& v)noexcept{set( v.data(),         v.size(),   0/*from*/ ); return *this; }
+        inline base_buffer&  operator=              ( const char c              ) noexcept { set( 0/*from*/, &c,            1           ); return *this; }
+        inline base_buffer&  operator=              ( const char* s             ) noexcept { set( 0/*from*/, s,             strlen( s ) ); return *this; }
+        inline base_buffer&  operator=              ( const std::string&  s     ) noexcept { set( 0/*from*/, s.c_str(),     s.size()    ); return *this; }
+        inline base_buffer&  operator=              ( const std::string_view  s ) noexcept { set( 0/*from*/, s.data(),      s.size()    ); return *this; }
+        inline base_buffer&  operator=              ( const std::vector<char>& v) noexcept { set( 0/*from*/, v.data(),      v.size()    ); return *this; }
+                                                                                                           
+        inline base_buffer&  operator=              ( const wchar_t c           ) noexcept { set( 0/*from*/, &c,            1           ); return *this; }
+        inline base_buffer&  operator=              ( const wchar_t* s          ) noexcept { set( 0/*from*/, s,             wcslen( s ) ); return *this; }
+        inline base_buffer&  operator=              ( const std::wstring& s     ) noexcept { set( 0/*from*/, s.c_str(),     s.size()    ); return *this; }
+        inline base_buffer&  operator=              ( const std::wstring_view s ) noexcept { set( 0/*from*/, s.data(),      s.size()    ); return *this; }
+        inline base_buffer&  operator=              ( const std::vector<wchar_t>& v)noexcept{set( 0/*from*/, v.data(),      v.size()    ); return *this; }
 
 
         // +=
@@ -225,6 +226,7 @@ namespace small
         // empty buffer
         inline const char* get_empty_buffer         () const { return empty_buffer_; }
 
+
         // !! after every function call setup buffer data
         inline void     setup_buffer                ( char* buffer_data, size_t buffer_length )
         {
@@ -233,9 +235,32 @@ namespace small
         }
 
 
+        // !! functions
+        inline void     setup_functions( 
+            std::function<void()> fn_clear, std::function<void( size_t/*size*/ )> fn_reserve, std::function<void( size_t/*size*/ )> fn_resize, std::function<void()>  fn_shrink, 
+            std::function<void( size_t/*from*/, const char* /*buffer*/, size_t/*length*/ )> fn_set, std::function<void( size_t/*from*/, const wchar_t* /*wbuffer*/, size_t/*wlength*/ )> fn_setw, 
+            std::function<void( size_t/*from*/, const char* /*buffer*/, size_t/*length*/ )> fn_insert, std::function<void( size_t/*from*/, const wchar_t* /*wbuffer*/, size_t/*wlength*/ )> fn_insertw, 
+            std::function<void( size_t/*from*/, size_t/*length*/ )> fn_erase )
+        {
+            // functions to supply
+            fn_clear_   = fn_clear;
+            fn_reserve_ = fn_reserve;
+            fn_resize_  = fn_resize;
+            fn_shrink_  = fn_shrink;
+
+            fn_set_     = fn_set;
+            fn_setw_    = fn_setw;
+
+            fn_insert_  = fn_insert;
+            fn_insertw_ = fn_insertw;
+
+            fn_erase_   = fn_erase;
+        }
+
+
     protected:
         // buffer set
-        inline void     buffer_set_impl             ( const char* b, size_t b_length, size_t from = 0 ) 
+        inline void     buffer_set_impl             ( size_t from, const char* b, size_t b_length )
         { 
             resize( from + b_length );  // make room
 
@@ -297,6 +322,7 @@ namespace small
         char *          buffer_data_;
         size_t          buffer_length_;
         
+    protected:
         // functions to supply
         std::function<void()>                                                                   fn_clear_;
         std::function<void( size_t/*size*/ )>                                                   fn_reserve_;
