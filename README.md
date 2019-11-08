@@ -3,19 +3,20 @@ Small project
 
 Contains usefull everyday features to be used like:
 
-* event
-* event_queue
-* spinlock (or critical_section)
-* worker_thread
+* event (it combines mutex and condition variable to create an event eithe automatic or manual)
+* event_queue (it combines the event and queue to create waiting queue mechanism)
+* spinlock (or critical_section to do quick locks)
+* worker_thread (creates workers on separate theads that do task when requested, based on event_queue)
 
 #
-* buffer
-* stack_string
+* buffer (a class for manipulating buffers)
+* stack_string (a string that first uses the stack to allocate space)
 
 #
-* base64
-* quick_hash
-* util functions
+* base64 (quick functions for base64 encode & decode)
+* quick_hash (a quick hash function)
+* util functions (like small::icasecmp for use with map, set, etc)
+
 
 #
 For windows if you include windows.h you must undefine small because there is a collision
@@ -270,7 +271,7 @@ b = small::frombase64_b( s64 );
 ```
 
 
-
+#
 
 ### stack_string
 A string class that uses the stack to allocate the string (it defines an array)
@@ -283,6 +284,7 @@ Beware that move semantics must copy the part that is allocated on stack.
 small::stack_string<256/*on stack*/> s;
 ```
 
+#
 
 
 ## Utilities
