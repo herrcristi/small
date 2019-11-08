@@ -63,8 +63,9 @@ namespace small
         inline char*    data                        ()       { return std_string_ ? std_string_.get()->data()  : stack_string_.data(); }
 
         // as c_string
-        inline std::string c_string                 () const { return std_string_ ? *std_string_.get() : std::string( stack_string_, stack_string_size_ ); }
+        inline std::string c_string                 () const { return std_string_ ? *std_string_.get() : std::string( stack_string_.data(), stack_string_size_ ); }
         inline std::string_view c_view              () const { return std::string_view{ data(), size() }; }
+        inline std::wstring c_wstring               () const { return get_stringw_impl(); }
 
 
 
@@ -237,7 +238,7 @@ namespace small
             
 #ifdef _WIN32
             size_t new_length = 0;
-            int ret = wcsrtombs_s( &new_length, nullptr, 0, &wstr, wstr_length, &state );
+            int ret = wcsrtombs_s( &new_length, nullptr, 0, &wstr, 0, &state );
             if ( ret != 0 || new_length == 0 )
                 return;
             --new_length; // because it adds the null terminator in length
@@ -254,6 +255,38 @@ namespace small
             /*size_t converted =*/ std::wcsrtombs( data() + start_from, &wstr, new_length, &state );
 #endif 
         }
+
+        // get the wstring
+        std::wstring get_stringw_impl() const
+        {
+            std::setlocale( LC_ALL, "en_US.utf8" );
+            std::mbstate_t state = std::mbstate_t();
+
+            // determine size
+            std::wstring wstr;
+            const char* mbstr = data();
+
+#ifdef _WIN32
+            size_t new_length = 0;
+            int ret = mbsrtowcs_s( &new_length, nullptr, 0, &mbstr, 0, &state );
+            if ( ret != 0 || new_length == 0 )
+                return wstr;
+            --new_length; // because it adds the null terminator in length
+            
+            wstr.resize( new_length );
+            size_t converted = 0;
+            ret = mbsrtowcs_s( &converted, wstr.data(), new_length + 1, &mbstr, new_length, &state );
+#else
+            size_t new_length = std::mbsrtowcs( nullptr, &mbstr, 0, &state );
+            if ( new_length == static_cast<std::size_t>(-1) )
+                return wstr;
+            
+            wstr.resize( new_length );
+            std::mbsrtowcs( wstr.data(), &mbstr, wstr.size(), &state );
+#endif
+            return wstr;
+        }
+
 
 
         // insert impl
