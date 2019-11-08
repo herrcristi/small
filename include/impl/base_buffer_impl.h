@@ -20,12 +20,12 @@ namespace small
     // it must be supplied with derived class with proper functions
     class base_buffer
     {
-    public:
+    protected:
         // base_buffer (allocates in chunks)
-        base_buffer                                 () : empty_buffer_{ '\0' }, buffer_data_{ nullptr }, buffer_length_{ 0 }, convert_utf8_utf16_{ false }{}
+        base_buffer                                 () : empty_buffer_{ '\0' }, buffer_data_{ nullptr }, buffer_length_{ 0 } {}
         ~base_buffer                                () {}
         
-
+    public:
          // functions for getting size size / length / empty 
         inline size_t   size                        () const    { return buffer_length_;   }
         inline size_t   length                      () const    { return size();           }
@@ -222,6 +222,9 @@ namespace small
 
 
     protected:
+        // empty buffer
+        inline const char* get_empty_buffer         () const { return empty_buffer_; }
+
         // !! after every function call setup buffer data
         inline void     setup_buffer                ( char* buffer_data, size_t buffer_length )
         {
@@ -230,7 +233,7 @@ namespace small
         }
 
 
-    private:
+    protected:
         // buffer set
         inline void     buffer_set_impl             ( const char* b, size_t b_length, size_t from = 0 ) 
         { 
@@ -294,9 +297,6 @@ namespace small
         char *          buffer_data_;
         size_t          buffer_length_;
         
-        // convert
-        bool            convert_utf8_utf16_;
-
         // functions to supply
         std::function<void()>                                                                   fn_clear_;
         std::function<void( size_t/*size*/ )>                                                   fn_reserve_;
