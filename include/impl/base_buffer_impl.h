@@ -23,7 +23,7 @@ namespace small
     protected:
         // base_buffer (allocates in chunks)
         base_buffer                                 () : empty_buffer_{ '\0' }, buffer_data_{ nullptr }, buffer_length_{ 0 } {}
-        ~base_buffer                                () {}
+        virtual ~base_buffer                        () {}
         
     public:
          // functions for getting size size / length / empty 
@@ -34,10 +34,10 @@ namespace small
         
         // functions to supply that affect size 
         // clear / reserve / resize / shrink_to_fit
-        inline void     clear                       ()                  { fn_clear_();              }
-        inline void     reserve                     ( size_t new_size ) { fn_reserve_( new_size );  }
-        inline void     resize                      ( size_t new_size ) { fn_resize_ ( new_size );  }
-        inline void     shrink_to_fit               ()                  { fn_shrink_();             }
+        inline void     clear                       ()                  { this->clear_impl();              }
+        inline void     reserve                     ( size_t new_size ) { this->reserve_impl( new_size );  }
+        inline void     resize                      ( size_t new_size ) { this->resize_impl ( new_size );  }
+        inline void     shrink_to_fit               ()                  { this->shrink_impl();             }
 
         
         // data access to buffer
@@ -91,21 +91,21 @@ namespace small
 
 
         // insert
-        inline void     insert                      ( size_t from, const base_buffer& b      )  { fn_insert_( from, b.data(),   b.size()    ); }
+        inline void     insert                      ( size_t from, const base_buffer& b      )  { this->insert_impl( from, b.data(),    b.size()    ); }
                         
-        inline void     insert                      ( size_t from, const char  c             )  { fn_insert_( from, &c,         1           ); }
-        inline void     insert                      ( size_t from, const char* s             )  { fn_insert_( from, s,          strlen( s ) ); }
-        inline void     insert                      ( size_t from, const char* s, size_t len )  { fn_insert_( from, s,          len         ); }
-        inline void     insert                      ( size_t from, const std::string& s      )  { fn_insert_( from, s.c_str(),  s.size()    ); }
-        inline void     insert                      ( size_t from, const std::string_view s  )  { fn_insert_( from, s.data(),   s.size()    ); }
-        inline void     insert                      ( size_t from, const std::vector<char>& v)  { fn_insert_( from, v.data(),   v.size()    ); }
+        inline void     insert                      ( size_t from, const char  c             )  { this->insert_impl( from, &c,          1           ); }
+        inline void     insert                      ( size_t from, const char* s             )  { this->insert_impl( from, s,           strlen( s ) ); }
+        inline void     insert                      ( size_t from, const char* s, size_t len )  { this->insert_impl( from, s,           len         ); }
+        inline void     insert                      ( size_t from, const std::string& s      )  { this->insert_impl( from, s.c_str(),   s.size()    ); }
+        inline void     insert                      ( size_t from, const std::string_view s  )  { this->insert_impl( from, s.data(),    s.size()    ); }
+        inline void     insert                      ( size_t from, const std::vector<char>& v)  { this->insert_impl( from, v.data(),    v.size()    ); }
                         
-        inline void     insert                      ( size_t from, const wchar_t  c          )  { fn_insertw_( from, &c,        1           ); }
-        inline void     insert                      ( size_t from, const wchar_t* s          )  { fn_insertw_( from, s,         wcslen( s ) ); }
-        inline void     insert                      ( size_t from, const wchar_t* s, size_t len ){fn_insertw_( from, s,         len         ); }
-        inline void     insert                      ( size_t from, const std::wstring& s     )  { fn_insertw_( from, s.c_str(), s.size()    ); }
-        inline void     insert                      ( size_t from, const std::wstring_view s )  { fn_insertw_( from, s.data(),  s.size()    ); }
-        inline void     insert                      ( size_t from, const std::vector<wchar_t>& v){fn_insertw_( from, v.data(),  v.size()    ); }
+        inline void     insert                      ( size_t from, const wchar_t  c          )  { this->insert_impl( from, &c,          1           ); }
+        inline void     insert                      ( size_t from, const wchar_t* s          )  { this->insert_impl( from, s,           wcslen( s ) ); }
+        inline void     insert                      ( size_t from, const wchar_t* s, size_t len ){this->insert_impl( from, s,           len         ); }
+        inline void     insert                      ( size_t from, const std::wstring& s     )  { this->insert_impl( from, s.c_str(),   s.size()    ); }
+        inline void     insert                      ( size_t from, const std::wstring_view s )  { this->insert_impl( from, s.data(),    s.size()    ); }
+        inline void     insert                      ( size_t from, const std::vector<wchar_t>& v){this->insert_impl( from, v.data(),    v.size()    ); }
 
         
         // overwrite
@@ -127,26 +127,26 @@ namespace small
 
 
         // set
-        inline void     set                         ( size_t from, const base_buffer& b         ) { fn_set_( from, b.data(),    b.size()    ); }
+        inline void     set                         ( size_t from, const base_buffer& b         ) { this->set_impl( from, b.data(), b.size()    ); }
                         
-        inline void     set                         ( size_t from, const char  c                ) { fn_set_( from, &c,          1           ); }
-        inline void     set                         ( size_t from, const char* s                ) { fn_set_( from, s,           strlen( s ) ); }
-        inline void     set                         ( size_t from, const char* s, size_t len    ) { fn_set_( from, s,           len         ); }
-        inline void     set                         ( size_t from, const std::string& s         ) { fn_set_( from, s.c_str(),   s.size()    ); }
-        inline void     set                         ( size_t from, const std::string_view s     ) { fn_set_( from, s.data(),    s.size()    ); }
-        inline void     set                         ( size_t from, const std::vector<char>& v   ) { fn_set_( from, v.data(),    v.size()    ); }
+        inline void     set                         ( size_t from, const char  c                ) { this->set_impl( from, &c,       1           ); }
+        inline void     set                         ( size_t from, const char* s                ) { this->set_impl( from, s,        strlen( s ) ); }
+        inline void     set                         ( size_t from, const char* s, size_t len    ) { this->set_impl( from, s,        len         ); }
+        inline void     set                         ( size_t from, const std::string& s         ) { this->set_impl( from, s.c_str(),s.size()    ); }
+        inline void     set                         ( size_t from, const std::string_view s     ) { this->set_impl( from, s.data(), s.size()    ); }
+        inline void     set                         ( size_t from, const std::vector<char>& v   ) { this->set_impl( from, v.data(), v.size()    ); }
                         
-        inline void     set                         ( size_t from, const wchar_t  c             ) { fn_setw_( from, &c,         1           ); }
-        inline void     set                         ( size_t from, const wchar_t* s             ) { fn_setw_( from, s,          wcslen( s ) ); }
-        inline void     set                         ( size_t from, const wchar_t* s, size_t len ) { fn_setw_( from, s,          len         ); }
-        inline void     set                         ( size_t from, const std::wstring& s        ) { fn_setw_( from, s.c_str(),  s.size()    ); }
-        inline void     set                         ( size_t from, const std::wstring_view s    ) { fn_setw_( from, s.data(),   s.size()    ); }
-        inline void     set                         ( size_t from, const std::vector<wchar_t>& v) { fn_setw_( from, v.data(),   v.size()    ); }
+        inline void     set                         ( size_t from, const wchar_t  c             ) { this->set_impl( from, &c,       1           ); }
+        inline void     set                         ( size_t from, const wchar_t* s             ) { this->set_impl( from, s,        wcslen( s ) ); }
+        inline void     set                         ( size_t from, const wchar_t* s, size_t len ) { this->set_impl( from, s,        len         ); }
+        inline void     set                         ( size_t from, const std::wstring& s        ) { this->set_impl( from, s.c_str(),s.size()    ); }
+        inline void     set                         ( size_t from, const std::wstring_view s    ) { this->set_impl( from, s.data(), s.size()    ); }
+        inline void     set                         ( size_t from, const std::vector<wchar_t>& v) { this->set_impl( from, v.data(), v.size()    ); }
 
         
         // erase
         inline void     erase                       ( size_t from )                 { if ( from < size() ) { resize( from ); } }
-        inline void     erase                       ( size_t from, size_t length )  { fn_erase_( from, length ); }
+        inline void     erase                       ( size_t from, size_t length )  { this->erase_impl( from, length ); }
         
 
         // compare
@@ -165,8 +165,8 @@ namespace small
         // operators
 
         // these specific operators must be implemented in derived classes
-        //inline base_buffer&  operator=                   ( const base_buffer& o           ) noexcept;
-        //inline base_buffer&  operator=                   ( base_buffer&&      o           ) noexcept;
+        inline base_buffer&  operator=              ( const base_buffer& o           ) = delete;
+        inline base_buffer&  operator=              ( base_buffer&&      o           ) = delete;
         // =
         inline base_buffer&  operator=              ( const char c              ) noexcept { set( 0/*from*/, &c,            1           ); return *this; }
         inline base_buffer&  operator=              ( const char* s             ) noexcept { set( 0/*from*/, s,             strlen( s ) ); return *this; }
@@ -235,28 +235,20 @@ namespace small
         }
 
 
-        // !! functions
-        inline void     setup_functions( 
-            std::function<void()> fn_clear, std::function<void( size_t/*size*/ )> fn_reserve, std::function<void( size_t/*size*/ )> fn_resize, std::function<void()>  fn_shrink, 
-            std::function<void( size_t/*from*/, const char* /*buffer*/, size_t/*length*/ )> fn_set, std::function<void( size_t/*from*/, const wchar_t* /*wbuffer*/, size_t/*wlength*/ )> fn_setw, 
-            std::function<void( size_t/*from*/, const char* /*buffer*/, size_t/*length*/ )> fn_insert, std::function<void( size_t/*from*/, const wchar_t* /*wbuffer*/, size_t/*wlength*/ )> fn_insertw, 
-            std::function<void( size_t/*from*/, size_t/*length*/ )> fn_erase )
-        {
-            // functions to supply
-            fn_clear_   = fn_clear;
-            fn_reserve_ = fn_reserve;
-            fn_resize_  = fn_resize;
-            fn_shrink_  = fn_shrink;
+        // !! functions to override
+        virtual void    clear_impl      () = 0;
+        virtual void    reserve_impl    ( size_t/*size*/ ) = 0;
+        virtual void    resize_impl     ( size_t/*size*/ ) = 0;
+        virtual void    shrink_impl     () = 0;
+        
+        virtual void    set_impl        ( size_t from, const char*    buffer, size_t length ) { buffer_set_impl( from, buffer, length ); }
+        virtual void    set_impl        ( size_t from, const wchar_t* buffer, size_t length ) { buffer_set_impl( from, (const char*)buffer, sizeof( wchar_t ) * length ); }
+        
+        virtual void    insert_impl     ( size_t from, const char*    buffer, size_t length ) { buffer_insert_impl( from, buffer, length ); }
+        virtual void    insert_impl     ( size_t from, const wchar_t* buffer, size_t length ) { buffer_insert_impl( from, (const char*)buffer, sizeof( wchar_t ) * length ); }
 
-            fn_set_     = fn_set;
-            fn_setw_    = fn_setw;
-
-            fn_insert_  = fn_insert;
-            fn_insertw_ = fn_insertw;
-
-            fn_erase_   = fn_erase;
-        }
-
+        virtual void    erase_impl      ( size_t from, size_t length ) { buffer_erase_impl( from, length ); }
+        
 
     protected:
         // buffer set
@@ -321,21 +313,6 @@ namespace small
         // base_buffer use char* instead of vector<char> because it is much faster
         char *          buffer_data_;
         size_t          buffer_length_;
-        
-    protected:
-        // functions to supply
-        std::function<void()>                                                                   fn_clear_;
-        std::function<void( size_t/*size*/ )>                                                   fn_reserve_;
-        std::function<void( size_t/*size*/ )>                                                   fn_resize_;
-        std::function<void()>                                                                   fn_shrink_;
-
-        std::function<void( size_t/*from*/, const char* /*buffer*/,     size_t/*length*/ )>     fn_set_;
-        std::function<void( size_t/*from*/, const wchar_t* /*wbuffer*/, size_t/*wlength*/ )>    fn_setw_;
-
-        std::function<void( size_t/*from*/, const char* /*buffer*/,     size_t/*length*/ )>     fn_insert_;
-        std::function<void( size_t/*from*/, const wchar_t* /*wbuffer*/, size_t/*wlength*/ )>    fn_insertw_;
-
-        std::function<void( size_t/*from*/, size_t/*length*/ )>                                 fn_erase_;
     };
 
 
