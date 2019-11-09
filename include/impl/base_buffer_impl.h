@@ -23,6 +23,8 @@ namespace small
     protected:
         // base_buffer (allocates in chunks)
         base_buffer                                 () : empty_buffer_{ '\0' }, buffer_data_{ nullptr }, buffer_length_{ 0 } {}
+        base_buffer                                 (const base_buffer& ) = delete;
+        base_buffer                                 (base_buffer&&      ) = delete;
         virtual ~base_buffer                        () {}
         
     public:
