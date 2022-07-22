@@ -1,12 +1,12 @@
 # small
 Small project
 
-Contains usefull everyday features to be used like:
+Contains useful everyday features that can be used in following ways:
 
-* event (it combines mutex and condition variable to create an event eithe automatic or manual)
-* event_queue (it combines the event and queue to create waiting queue mechanism)
+* event (it combines mutex and condition variable to create an event which is either automatic or manual)
+* event_queue (it combines the event and queue for creating waiting queue mechanism)
 * spinlock (or critical_section to do quick locks)
-* worker_thread (creates workers on separate theads that do task when requested, based on event_queue)
+* worker_thread (creates workers on separate threads that do task when requested, based on event_queue)
 
 #
 * buffer (a class for manipulating buffers)
@@ -85,7 +85,7 @@ e.reset_event()
 #
 
 ### event_queue
-A queue with events functions to wait for items to be available
+A queue with events functions that wait for items until they are available
 
 The following functions are available
 
@@ -176,9 +176,8 @@ To use it as a locker
 
 ```lock, unlock, try_lock```
 
-Signal exit when we no longer want to use worker threads, 
-usefull when we have multiple objects that do some stuff that takes some time on destructor, 
-so until it is the turn of the destructor of this element we may already closed all the working threads
+Signal exit when we no longer want to use worker threads, useful when we have multiple objects that do some stuff that takes some time on destructor, 
+so until it is the turn of the destructor of this element, the working threads might be closed.
 
 ```signal_exit, is_exit```
 
@@ -279,7 +278,7 @@ b = small::frombase64_b( s64 );
 ### base64
 Functions to encode or decode base64
 
-The following function is available
+The following functions are available
 ```tobase64, frombase64```
 
 and additionals for string and vector<char>
