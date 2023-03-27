@@ -152,7 +152,7 @@ namespace small
             {
                 if ( !th.joinable() )
                 {
-                    th = std::move( std::thread( /*[&]() { thread_function(); }*/&worker_thread::thread_function, this ) );
+                    th = std::thread( /*[&]() { thread_function(); }*/&worker_thread::thread_function, this );
                 }
             }
             // mark threads were created

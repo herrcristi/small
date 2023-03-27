@@ -44,7 +44,7 @@ namespace small
     {
     public:
         // size
-        inline size_t   size                        () const {  std::unique_lock<small::event> mlock( event_ ); return queue_.size();  }
+        inline size_t   size                        () {  std::unique_lock<small::event> mlock( event_ ); return queue_.size();  }
         // empty
         inline bool     empty                       () const { return size() == 0; }
         
